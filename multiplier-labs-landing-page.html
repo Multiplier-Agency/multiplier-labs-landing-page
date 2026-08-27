@@ -1,0 +1,922 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Multiplier Labs</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Geist:wght@300;400;500;600;700;800;900&family=IBM+Plex+Serif:ital,wght@0,400;0,500;1,400;1,500&display=swap" rel="stylesheet"><style>
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+:root {
+  /* Multiplier brand — primary */
+  --pack-blue: #111928;
+  --vellum: #F5F4F4;
+  /* Multiplier brand — accent */
+  --ultra-coral: #F45353;
+  /* Multiplier brand — secondary */
+  --wolf-gray: #62747D;
+  --hunt-gray: #39423F;
+  /* Multiplier brand — tertiary greys */
+  --gray-100: #EFEFEF;
+  --gray-300: #E5E7E3;
+  --gray-900: #343E53;
+  --white: #ffffff;
+  /* internal aliases (mapped to brand tokens above) */
+  --signal-navy: var(--gray-900);
+  --slate-charcoal: var(--wolf-gray);
+  --architect-sand: var(--gray-300);
+  /* lightened, secondary-feeling tint for "coming soon" cards */
+  --fog-gray: #D9DEDF;
+}
+
+html { scroll-behavior: smooth; }
+
+body {
+  font-family: 'Geist', sans-serif;
+  background-color: var(--vellum);
+  color: var(--pack-blue);
+  -webkit-font-smoothing: antialiased;
+}
+
+.mlabs-page {
+  font-family: 'Geist', sans-serif;
+  background-color: var(--vellum);
+  color: var(--pack-blue);
+  -webkit-font-smoothing: antialiased;
+  width: 100%;
+}
+
+/* ── NAV ── */
+nav {
+  background: var(--pack-blue);
+  padding: 0 48px;
+  height: 64px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  position: sticky;
+  top: 0;
+  z-index: 100;
+}
+
+.nav-logo { display: flex; align-items: baseline; gap: 6px; text-decoration: none; }
+.nav-logo .word-multiplier { font-weight: 800; font-size: 15px; letter-spacing: 0.08em; color: var(--white); text-transform: uppercase; }
+.nav-logo .word-labs { font-weight: 800; font-size: 15px; letter-spacing: 0.08em; color: var(--ultra-coral); text-transform: uppercase; }
+
+.nav-links { display: flex; align-items: center; gap: 32px; list-style: none; }
+.nav-links a { font-size: 13px; font-weight: 500; color: rgba(255,255,255,0.6); text-decoration: none; letter-spacing: 0.04em; transition: color 0.2s; }
+.nav-links a:hover { color: var(--white); }
+.nav-links .nav-agency { color: rgba(255,255,255,0.5); border-bottom: 1px solid rgba(255,255,255,0.2); padding-bottom: 1px; }
+
+.nav-toggle { display: none; background: none; border: none; cursor: pointer; padding: 8px; margin: -8px; }
+.nav-toggle svg { width: 22px; height: 22px; stroke: var(--white); display: block; }
+
+/* ── HERO ── */
+.hero {
+  background: var(--pack-blue);
+  padding: 100px 48px 90px;
+  position: relative;
+  overflow: hidden;
+  text-align: center;
+}
+
+.hero::before {
+  content: '';
+  position: absolute;
+  top: -120px; right: -80px;
+  width: 500px; height: 500px;
+  background: radial-gradient(circle, rgba(244,83,83,0.07) 0%, transparent 70%);
+  pointer-events: none;
+}
+
+.hero-inner { max-width: 720px; margin: 0 auto; }
+.hero-eyebrow { font-size: 11px; font-weight: 700; letter-spacing: 0.18em; text-transform: uppercase; color: var(--ultra-coral); margin-bottom: 24px; }
+.hero-headline { font-weight: 900; font-size: clamp(42px, 6vw, 76px); line-height: 1.25; letter-spacing: -0.02em; color: var(--white); margin-bottom: 24px; }
+.hero-headline .ai-speed { font-weight: 500; }
+.hero-headline em { font-family: 'IBM Plex Serif', serif; font-style: italic; font-weight: 500; color: var(--ultra-coral); }
+.hero-body { font-size: 16px; color: rgba(255,255,255,0.5); max-width: 480px; margin: 0 auto; line-height: 1.75; margin-bottom: 48px; }
+.hero-ctas { display: flex; gap: 16px; flex-wrap: wrap; align-items: center; justify-content: center; }
+
+.btn-primary { background: var(--ultra-coral); color: var(--white); font-size: 14px; font-weight: 700; letter-spacing: 0.04em; padding: 14px 28px; border: none; cursor: pointer; text-decoration: none; display: inline-block; transition: background 0.2s, transform 0.15s; }
+.btn-primary:hover { background: #e03e3e; transform: translateY(-1px); }
+.btn-ghost { background: transparent; color: rgba(255,255,255,0.7); font-size: 14px; font-weight: 500; padding: 13px 28px; border: 1px solid rgba(255,255,255,0.2); cursor: pointer; text-decoration: none; display: inline-block; transition: border-color 0.2s, color 0.2s; }
+.btn-ghost:hover { border-color: rgba(255,255,255,0.5); color: var(--white); }
+
+/* ── TRUSTED BY MARQUEE ── */
+.trusted-section {
+  background: var(--pack-blue);
+  padding: 36px 0 32px;
+  overflow: hidden;
+  position: relative;
+}
+
+.trusted-header {
+  text-align: center;
+  margin-bottom: 24px;
+}
+
+.trusted-header span {
+  font-size: 13px;
+  font-weight: 800;
+  letter-spacing: 0.22em;
+  text-transform: uppercase;
+  color: var(--ultra-coral);
+}
+
+.trusted-marquee-wrap {
+  position: relative;
+  overflow: hidden;
+}
+
+.trusted-marquee-wrap::before,
+.trusted-marquee-wrap::after {
+  content: '';
+  position: absolute;
+  top: 0; bottom: 0;
+  width: 100px;
+  z-index: 5;
+  pointer-events: none;
+}
+.trusted-marquee-wrap::before { left: 0; background: linear-gradient(to right, var(--pack-blue), transparent); }
+.trusted-marquee-wrap::after { right: 0; background: linear-gradient(to left, var(--pack-blue), transparent); }
+
+.marquee-track {
+  display: flex;
+  align-items: center;
+  width: max-content;
+  animation: marquee 55s linear infinite;
+}
+
+.marquee-track:hover { animation-play-state: paused; }
+
+@keyframes marquee {
+  from { transform: translateX(0); }
+  to { transform: translateX(-50%); }
+}
+
+.marquee-item {
+  display: flex;
+  align-items: center;
+  padding: 0 40px;
+  border-right: 1px solid rgba(255,255,255,0.2);
+  height: 40px;
+  white-space: nowrap;
+}
+
+.marquee-item span {
+  font-size: 17px;
+  font-weight: 800;
+  letter-spacing: 0.1em;
+  color: rgba(255,255,255,0.85);
+  text-transform: uppercase;
+}
+
+.marquee-item span:hover { color: var(--white); }
+
+/* ── TOOLS SECTION ── */
+.tools-section { background: var(--vellum); padding: 88px 48px 96px; }
+.section-inner { max-width: 1040px; margin: 0 auto; }
+
+.tools-header {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 64px;
+  align-items: start;
+  margin-bottom: 64px;
+  padding-bottom: 48px;
+  border-bottom: 2px solid var(--pack-blue);
+}
+
+.tools-header-left { display: flex; flex-direction: column; gap: 16px; }
+.section-eyebrow { font-size: 11px; font-weight: 700; letter-spacing: 0.18em; text-transform: uppercase; color: var(--ultra-coral); }
+
+.tools-header-left h2 {
+  font-weight: 900;
+  font-size: clamp(34px, 4.2vw, 54px);
+  letter-spacing: -0.03em;
+  line-height: 0.95;
+  color: var(--pack-blue);
+  text-transform: uppercase;
+}
+
+.tools-header-left .header-desc {
+  font-size: 14px;
+  color: var(--slate-charcoal);
+  opacity: 0.6;
+  line-height: 1.7;
+  max-width: 300px;
+  padding-top: 4px;
+}
+
+.tools-header-right { display: flex; flex-direction: column; padding-top: 6px; }
+
+.tools-stat {
+  display: grid;
+  grid-template-columns: 80px 1fr;
+  align-items: center;
+  gap: 16px;
+  padding: 18px 0;
+  border-bottom: 1px solid rgba(17,25,40,0.1);
+}
+.tools-stat:first-child { border-top: 1px solid rgba(17,25,40,0.1); }
+
+.stat-num { font-size: 30px; font-weight: 900; letter-spacing: -0.04em; color: var(--pack-blue); line-height: 1; white-space: nowrap; }
+.stat-num sup { color: var(--ultra-coral); font-size: 16px; font-weight: 800; vertical-align: super; letter-spacing: 0; }
+.stat-label { font-size: 13px; font-weight: 400; color: var(--slate-charcoal); opacity: 0.6; line-height: 1.45; }
+
+/* ── TOOL GRID ── */
+.tools-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 3px; background: var(--pack-blue); }
+
+.tool-card { display: flex; flex-direction: column; position: relative; overflow: hidden; transition: filter 0.15s; }
+.tool-card:hover { filter: brightness(1.05); }
+
+/* Live tools get bold brand color; coming-soon tools share a lightened, secondary-feeling tint */
+.tool-card:nth-child(1) { background: var(--pack-blue); }
+.tool-card:nth-child(2) { background: var(--ultra-coral); }
+/* Coming-soon cards: crossing coral ribbon banners, per user-provided visual reference */
+.tool-card.coming-soon {
+  background: var(--vellum);
+  border: 1px solid rgba(17,25,40,0.15);
+  justify-content: flex-end;
+  position: relative;
+  overflow: hidden;
+  min-height: 320px;
+}
+.tool-headline {
+  position: absolute;
+  top: 0; right: 0; bottom: 0; left: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  padding: 0 30px;
+  z-index: 1;
+}
+.tool-headline span {
+  font-family: 'IBM Plex Serif', serif;
+  font-style: italic;
+  font-weight: 500;
+  font-size: clamp(22px, 2.6vw, 30px);
+  line-height: 1.15;
+  letter-spacing: -0.01em;
+  color: var(--pack-blue);
+}
+.ribbon-band {
+  position: absolute;
+  left: -40px;
+  right: -40px;
+  padding: 10px 0;
+  background: var(--ultra-coral);
+  white-space: nowrap;
+  overflow: hidden;
+  text-align: center;
+  pointer-events: none;
+  z-index: 2;
+}
+.ribbon-band span {
+  font-family: 'IBM Plex Serif', serif;
+  font-style: italic;
+  font-weight: 500;
+  font-size: 14px;
+  letter-spacing: 0.01em;
+  color: var(--white);
+}
+.ribbon-band.band-a { top: 30%; transform: rotate(-8deg); }
+.ribbon-band.band-b { top: 54%; transform: rotate(8deg); }
+.tool-card.coming-soon .tool-cta.waitlist {
+  margin: 24px 0 32px;
+  align-self: center;
+  position: relative;
+  z-index: 3;
+  color: var(--white);
+  border: 1px solid var(--pack-blue);
+  background: var(--pack-blue);
+}
+.tool-card.coming-soon .tool-cta.waitlist:hover { background: #060a12; }
+
+/* Ready-now tool: distinct from both the two flagship live cards and the gray coming-soon cards */
+.tool-card.live-alt { background: var(--wolf-gray); }
+.tool-card.live-alt .tool-keyword { color: rgba(255,255,255,0.85); }
+
+.tool-card-header {
+  padding: 28px 28px 22px;
+  border-bottom: 1px solid rgba(255,255,255,0.1);
+  min-height: 168px;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+}
+.tool-card:nth-child(2) .tool-card-header { border-bottom-color: rgba(17,25,40,0.1); }
+
+.tool-card-header-top { display: flex; justify-content: flex-end; }
+
+.tool-icon { width: 60px; height: 60px; stroke: currentColor; color: rgba(255,255,255,0.92); margin: 10px 0 16px; display: block; }
+.tool-card:nth-child(2) .tool-icon { color: var(--white); }
+
+.tool-badge { font-size: 9px; font-weight: 800; letter-spacing: 0.14em; text-transform: uppercase; padding: 4px 9px; }
+.badge-live { background: var(--ultra-coral); color: var(--white); }
+.tool-card:nth-child(2) .badge-live { background: var(--pack-blue); color: var(--white); }
+.badge-soon {
+  align-self: flex-start;
+  font-size: 10px;
+  font-weight: 800;
+  letter-spacing: 0.1em;
+  padding: 6px 12px;
+  background: var(--ultra-coral);
+  color: var(--white);
+  border: none;
+}
+
+.tool-name { font-weight: 900; font-size: clamp(22px, 2.6vw, 30px); letter-spacing: -0.03em; line-height: 0.95; text-transform: uppercase; color: var(--white); margin-bottom: 10px; }
+
+.tool-keyword { font-size: 15px; font-weight: 700; letter-spacing: -0.01em; line-height: 1.35; text-transform: none; color: var(--ultra-coral); }
+.tool-card:nth-child(2) .tool-keyword { color: rgba(17,25,40,0.85); }
+
+.tool-card-body { padding: 0 28px 32px; display: flex; flex-direction: column; flex: 1; justify-content: flex-end; }
+
+.tool-tags { display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 24px; margin-top: 24px; }
+.tool-tag { font-size: 10px; font-weight: 700; letter-spacing: 0.06em; text-transform: uppercase; color: rgba(255,255,255,0.75); background: rgba(255,255,255,0.1); border: 1px solid rgba(255,255,255,0.15); padding: 5px 10px; }
+.tool-card:nth-child(2) .tool-tag { color: rgba(17,25,40,0.65); background: rgba(17,25,40,0.1); border-color: rgba(17,25,40,0.15); }
+
+.tool-cta { font-size: 11px; font-weight: 800; letter-spacing: 0.12em; text-transform: uppercase; text-decoration: none; display: inline-flex; align-items: center; gap: 10px; padding: 11px 20px; background: var(--white); color: var(--pack-blue); align-self: flex-start; transition: background 0.15s, gap 0.2s; }
+.tool-cta:hover { gap: 16px; }
+.tool-card:nth-child(2) .tool-cta { background: var(--pack-blue); color: var(--white); }
+.tool-cta.waitlist { background: transparent; color: rgba(255,255,255,0.8); border: 1px solid rgba(255,255,255,0.3); }
+.tool-cta.waitlist:hover { background: rgba(255,255,255,0.1); gap: 16px; }
+
+/* ── NEWSLETTER (form styles reused inline within the agency strip) ── */
+.newsletter-issue {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 24px;
+}
+
+.newsletter-issue-dot {
+  width: 8px; height: 8px;
+  background: var(--ultra-coral);
+  border-radius: 50%;
+  animation: pulse 2s ease-in-out infinite;
+}
+
+@keyframes pulse {
+  0%, 100% { opacity: 1; transform: scale(1); }
+  50% { opacity: 0.5; transform: scale(0.85); }
+}
+
+.newsletter-issue span {
+  font-size: 10px;
+  font-weight: 800;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  color: var(--ultra-coral);
+}
+
+.newsletter-eyebrow { font-size: 11px; font-weight: 700; letter-spacing: 0.18em; text-transform: uppercase; color: var(--ultra-coral); margin-bottom: 16px; }
+
+.newsletter-headline {
+  font-weight: 900;
+  font-size: clamp(30px, 3.8vw, 46px);
+  letter-spacing: -0.02em;
+  line-height: 1.02;
+  color: var(--white);
+  margin-bottom: 20px;
+}
+
+.newsletter-desc {
+  font-size: 15px;
+  color: rgba(255,255,255,0.45);
+  line-height: 1.8;
+}
+
+.newsletter-desc strong { color: rgba(255,255,255,0.7); font-weight: 600; }
+
+/* What's inside bullets */
+.newsletter-bullets {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  margin-bottom: 32px;
+}
+
+.newsletter-bullet {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  font-size: 13px;
+  color: rgba(255,255,255,0.6);
+  font-weight: 500;
+}
+
+.newsletter-bullet::before {
+  content: '';
+  width: 4px; height: 4px;
+  background: var(--ultra-coral);
+  border-radius: 50%;
+  flex-shrink: 0;
+}
+
+/* Social proof logos */
+.newsletter-proof {
+  padding-top: 24px;
+  border-top: 1px solid rgba(255,255,255,0.07);
+}
+
+.newsletter-proof-label {
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  color: rgba(255,255,255,0.25);
+  margin-bottom: 14px;
+}
+
+.newsletter-proof-names {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px 0;
+}
+
+.proof-name {
+  font-size: 12px;
+  font-weight: 800;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: rgba(255,255,255,0.5);
+  padding-right: 16px;
+  margin-right: 16px;
+  border-right: 1px solid rgba(255,255,255,0.12);
+}
+
+.proof-name:last-child { border-right: none; }
+
+/* Form */
+.newsletter-form-wrap {
+  background: rgba(255,255,255,0.04);
+  border: 1px solid rgba(255,255,255,0.09);
+  padding: 32px;
+  margin-bottom: 24px;
+}
+
+.form-headline {
+  font-size: 13px;
+  font-weight: 700;
+  color: rgba(255,255,255,0.5);
+  letter-spacing: 0.04em;
+  margin-bottom: 20px;
+  text-transform: uppercase;
+  font-size: 11px;
+  letter-spacing: 0.14em;
+}
+
+.newsletter-form { display: flex; flex-direction: column; gap: 10px; }
+.newsletter-form.hidden { display: none; }
+
+.newsletter-form input[type="email"] {
+  background: rgba(255,255,255,0.06);
+  border: 1px solid rgba(255,255,255,0.12);
+  color: var(--white);
+  font-family: 'Geist', sans-serif;
+  font-size: 14px;
+  padding: 14px 18px;
+  outline: none;
+  transition: border-color 0.2s;
+  width: 100%;
+}
+
+.newsletter-form input[type="email"]::placeholder { color: rgba(255,255,255,0.25); }
+.newsletter-form input[type="email"]:focus { border-color: var(--ultra-coral); }
+
+.btn-subscribe {
+  background: var(--ultra-coral);
+  color: var(--white);
+  font-family: 'Geist', sans-serif;
+  font-size: 13px;
+  font-weight: 800;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  padding: 15px 24px;
+  border: none;
+  cursor: pointer;
+  transition: background 0.2s;
+  width: 100%;
+}
+
+.btn-subscribe:hover { background: #e03e3e; }
+.newsletter-fine { font-size: 12px; color: rgba(255,255,255,0.3); margin-top: 4px; }
+
+/* Subscriber count social proof */
+.subscriber-proof {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.subscriber-avatars {
+  display: flex;
+}
+
+.subscriber-avatars span {
+  width: 28px; height: 28px;
+  border-radius: 50%;
+  border: 2px solid var(--signal-navy);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 10px;
+  font-weight: 800;
+  margin-left: -8px;
+  color: var(--pack-blue);
+}
+
+.subscriber-avatars span:first-child { margin-left: 0; }
+.av1 { background: #a8d8ea; }
+.av2 { background: #f7d794; }
+.av3 { background: #b8f0c8; }
+.av4 { background: #f0b8c8; }
+
+.subscriber-text {
+  font-size: 12px;
+  color: rgba(255,255,255,0.35);
+  line-height: 1.4;
+}
+
+.subscriber-text strong {
+  color: rgba(255,255,255,0.6);
+  font-weight: 600;
+}
+
+.newsletter-confirm { display: none; flex-direction: column; gap: 16px; padding: 32px; border: 1px solid rgba(244,83,83,0.2); background: rgba(244,83,83,0.04); }
+.newsletter-confirm.visible { display: flex; }
+.confirm-icon { width: 40px; height: 40px; background: var(--ultra-coral); display: flex; align-items: center; justify-content: center; }
+.confirm-icon svg { width: 20px; height: 20px; }
+.confirm-title { font-size: 16px; font-weight: 800; color: var(--white); }
+.confirm-desc { font-size: 13px; color: rgba(255,255,255,0.45); line-height: 1.6; }
+
+/* ── AGENCY STRIP + NEWSLETTER CTA (merged onto one line, CTA centered) ── */
+.agency-strip { background: var(--pack-blue); padding: 32px 48px; display: grid; grid-template-columns: 1fr auto 1fr; align-items: center; gap: 32px; border-top: 1px solid rgba(255,255,255,0.05); }
+.agency-strip-copy p { font-size: 13px; color: rgba(255,255,255,0.35); line-height: 1.6; max-width: 480px; }
+.agency-strip-copy p.agency-lead { color: rgba(255,255,255,0.65); font-weight: 600; margin-bottom: 6px; }
+.agency-link { justify-self: end; font-size: 12px; font-weight: 700; letter-spacing: 0.1em; text-transform: uppercase; color: var(--ultra-coral); text-decoration: none; white-space: nowrap; border-bottom: 1px solid var(--ultra-coral); padding-bottom: 2px; transition: opacity 0.2s; }
+.agency-link:hover { opacity: 0.7; }
+
+.agency-strip-cta { justify-self: center; display: flex; flex-direction: column; align-items: center; gap: 10px; }
+.agency-cta-label { font-size: 11px; font-weight: 800; letter-spacing: 0.1em; text-transform: uppercase; color: var(--ultra-coral); white-space: nowrap; }
+.agency-strip-cta .newsletter-form { flex-direction: row; gap: 8px; }
+.agency-strip-cta .newsletter-form input[type="email"] { width: 220px; padding: 13px 16px; font-size: 14px; }
+.agency-strip-cta .btn-subscribe { width: auto; padding: 13px 22px; font-size: 12px; white-space: nowrap; }
+.agency-strip-cta .newsletter-confirm { display: none; flex-direction: row; align-items: center; gap: 8px; padding: 0; border: none; background: transparent; }
+.agency-strip-cta .newsletter-confirm.visible { display: flex; }
+.agency-strip-cta .newsletter-confirm .confirm-icon { width: 24px; height: 24px; flex-shrink: 0; }
+.agency-strip-cta .newsletter-confirm .confirm-icon svg { width: 12px; height: 12px; }
+.agency-strip-cta .newsletter-confirm .confirm-title { font-size: 13px; color: var(--white); font-weight: 600; }
+
+/* ── FOOTER ── */
+footer { background: var(--pack-blue); border-top: 1px solid rgba(255,255,255,0.05); padding: 24px 48px; display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 16px; }
+.footer-logo { display: flex; align-items: baseline; gap: 6px; text-decoration: none; }
+.footer-logo .fl-m { font-weight: 800; font-size: 13px; letter-spacing: 0.08em; color: var(--white); text-transform: uppercase; }
+.footer-logo .fl-l { font-weight: 800; font-size: 13px; letter-spacing: 0.08em; color: var(--ultra-coral); text-transform: uppercase; }
+.footer-links { display: flex; gap: 24px; list-style: none; }
+.footer-links a { font-size: 12px; color: rgba(255,255,255,0.3); text-decoration: none; transition: color 0.2s; }
+.footer-links a:hover { color: rgba(255,255,255,0.65); }
+.footer-copy { font-size: 11px; color: rgba(255,255,255,0.2); }
+
+/* ── RESPONSIVE ── */
+@media (max-width: 1024px) and (min-width: 769px) {
+  .tools-grid { grid-template-columns: repeat(2, 1fr); }
+}
+
+@media (max-width: 768px) {
+  nav { padding: 0 20px; position: relative; }
+  .nav-toggle { display: flex; align-items: center; }
+  .nav-links {
+    position: absolute;
+    top: 100%; left: 0; right: 0;
+    background: var(--pack-blue);
+    flex-direction: column;
+    align-items: stretch;
+    gap: 0;
+    max-height: 0;
+    overflow: hidden;
+    transition: max-height 0.25s ease;
+    border-bottom: 1px solid rgba(255,255,255,0.08);
+  }
+  .nav-links.open { max-height: 260px; }
+  .nav-links li { width: 100%; }
+  .nav-links a { display: block; width: 100%; padding: 16px 20px; font-size: 14px; border-top: 1px solid rgba(255,255,255,0.06); }
+  .nav-links .nav-agency { border-bottom: none; }
+
+  .hero { padding: 56px 20px 48px; }
+  .hero-headline { font-size: clamp(34px, 9vw, 56px); }
+  .hero-body { font-size: 15px; margin-bottom: 36px; }
+  .hero-ctas { width: 100%; }
+  .hero-ctas a { flex: 1 1 auto; text-align: center; }
+
+  .trusted-label { display: none; }
+
+  .tools-section { padding: 56px 20px 64px; }
+  .tools-header { grid-template-columns: 1fr; gap: 40px; }
+  .tools-grid { grid-template-columns: 1fr; }
+  .tool-card-header { padding: 24px 22px 18px; }
+  .tool-card-body { padding: 0 22px 26px; }
+  .tool-icon { width: 48px; height: 48px; margin: 6px 0 14px; }
+  .tool-card.coming-soon { min-height: 220px; }
+
+  .agency-strip { padding: 24px 20px; grid-template-columns: 1fr; gap: 20px; }
+  .agency-strip-cta { justify-self: stretch; align-items: flex-start; width: 100%; }
+  .agency-strip-cta .newsletter-form { width: 100%; }
+  .agency-strip-cta .newsletter-form input[type="email"] { flex: 1; width: auto; }
+  .agency-link { justify-self: start; }
+  footer { padding: 20px; flex-direction: column; align-items: flex-start; }
+}
+
+@media (max-width: 380px) {
+  .hero-headline { font-size: 30px; }
+  .tool-name { font-size: 20px; }
+  .btn-primary, .btn-ghost { padding: 13px 18px; font-size: 13px; }
+}
+</style>
+</head>
+<body>
+
+<div class="mlabs-page">
+<!-- NAV -->
+<nav>
+  <a href="#" class="nav-logo">
+    <span class="word-multiplier">Multiplier</span>
+    <span class="word-labs">Labs</span>
+  </a>
+  <button class="nav-toggle" id="navToggle" aria-label="Toggle menu" aria-expanded="false" onclick="toggleNav()">
+    <svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="18" x2="21" y2="18"/></svg>
+  </button>
+  <ul class="nav-links" id="navLinks">
+    <li><a href="#tools" onclick="closeNav()">Tools</a></li>
+    <li><a href="#newsletter" onclick="closeNav()">Newsletter</a></li>
+    <li><a href="https://multiplier.co" target="_blank" class="nav-agency">The Agency →</a></li>
+  </ul>
+</nav>
+
+<!-- HERO -->
+<section class="hero">
+  <div class="hero-inner">
+    <p class="hero-eyebrow">Multiplier Labs</p>
+    <h1 class="hero-headline"><span class="ai-speed">AI speed.</span><br><em>Human expertise.</em></h1>
+    <p class="hero-body">Agency tools for the modern marketer</p>
+    <div class="hero-ctas">
+      <a href="#tools" class="btn-primary">Explore the tools →</a>
+      <a href="#newsletter" class="btn-ghost">Stay in the loop</a>
+    </div>
+  </div>
+</section>
+
+<!-- TRUSTED BY MARQUEE -->
+<div class="trusted-section">
+  <div class="trusted-header"><span>Trusted by</span></div>
+  <div class="trusted-marquee-wrap">
+  <div class="marquee-track" id="marqueeTrack">
+    <!-- Set 1 -->
+    <div class="marquee-item"><span>3M</span></div>
+    <div class="marquee-item"><span>Amazon</span></div>
+    <div class="marquee-item"><span>Bridgestone</span></div>
+    <div class="marquee-item"><span>Caterpillar Inc.</span></div>
+    <div class="marquee-item"><span>Chase Sapphire</span></div>
+    <div class="marquee-item"><span>Dallas Open</span></div>
+    <div class="marquee-item"><span>DAZN</span></div>
+    <div class="marquee-item"><span>ESPN</span></div>
+    <div class="marquee-item"><span>Extreme Networks</span></div>
+    <div class="marquee-item"><span>Front Office Sports</span></div>
+    <div class="marquee-item"><span>Geodis</span></div>
+    <div class="marquee-item"><span>HBO Max</span></div>
+    <div class="marquee-item"><span>Invisalign</span></div>
+    <div class="marquee-item"><span>J.P. Morgan</span></div>
+    <div class="marquee-item"><span>MLB Players</span></div>
+    <div class="marquee-item"><span>Mountain Valley</span></div>
+    <div class="marquee-item"><span>PitchBook</span></div>
+    <div class="marquee-item"><span>Primo Water</span></div>
+    <div class="marquee-item"><span>Saratoga</span></div>
+    <div class="marquee-item"><span>Sazerac</span></div>
+    <div class="marquee-item"><span>Total Wine</span></div>
+    <div class="marquee-item"><span>UPMC</span></div>
+    <div class="marquee-item"><span>Winnebago</span></div>
+    <div class="marquee-item"><span>Wyndham</span></div>
+    <!-- Set 2 (duplicate for seamless loop) -->
+    <div class="marquee-item"><span>3M</span></div>
+    <div class="marquee-item"><span>Amazon</span></div>
+    <div class="marquee-item"><span>Bridgestone</span></div>
+    <div class="marquee-item"><span>Caterpillar Inc.</span></div>
+    <div class="marquee-item"><span>Chase Sapphire</span></div>
+    <div class="marquee-item"><span>Dallas Open</span></div>
+    <div class="marquee-item"><span>DAZN</span></div>
+    <div class="marquee-item"><span>ESPN</span></div>
+    <div class="marquee-item"><span>Extreme Networks</span></div>
+    <div class="marquee-item"><span>Front Office Sports</span></div>
+    <div class="marquee-item"><span>Geodis</span></div>
+    <div class="marquee-item"><span>HBO Max</span></div>
+    <div class="marquee-item"><span>Invisalign</span></div>
+    <div class="marquee-item"><span>J.P. Morgan</span></div>
+    <div class="marquee-item"><span>MLB Players</span></div>
+    <div class="marquee-item"><span>Mountain Valley</span></div>
+    <div class="marquee-item"><span>PitchBook</span></div>
+    <div class="marquee-item"><span>Primo Water</span></div>
+    <div class="marquee-item"><span>Saratoga</span></div>
+    <div class="marquee-item"><span>Sazerac</span></div>
+    <div class="marquee-item"><span>Total Wine</span></div>
+    <div class="marquee-item"><span>UPMC</span></div>
+    <div class="marquee-item"><span>Winnebago</span></div>
+    <div class="marquee-item"><span>Wyndham</span></div>
+  </div>
+  </div>
+</div>
+
+<!-- TOOLS -->
+<section class="tools-section" id="tools">
+  <div class="section-inner">
+    <div class="tools-grid">
+
+      <!-- 01 Property Evaluator - LIVE -->
+      <div class="tool-card">
+        <div class="tool-card-header">
+          <svg class="tool-icon" viewBox="0 0 24 24" fill="none" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><ellipse cx="12" cy="12" rx="9" ry="6.5"/><ellipse cx="12" cy="12" rx="4.5" ry="3.2"/><line x1="4.5" y1="7" x2="2.5" y2="3"/><line x1="19.5" y1="7" x2="21.5" y2="3"/><line x1="4.5" y1="17" x2="2.5" y2="21"/><line x1="19.5" y1="17" x2="21.5" y2="21"/></svg>
+          <div>
+            <div class="tool-name">Property<br>Evaluator</div>
+            <div class="tool-keyword">Evaluate sponsorship value and ROI instantly</div>
+          </div>
+        </div>
+        <div class="tool-card-body">
+          <div class="tool-tags">
+            <span class="tool-tag">Audience sizing</span>
+            <span class="tool-tag">ROI benchmarking</span>
+            <span class="tool-tag">Risk assessment</span>
+            <span class="tool-tag">Deal comparison</span>
+          </div>
+          <a href="https://rebuildmultiplierindex-staging-ga.up.railway.app/" target="_blank" class="tool-cta">Use tool →</a>
+        </div>
+      </div>
+
+      <!-- 02 Culture Relevance Calculator - LIVE -->
+      <div class="tool-card">
+        <div class="tool-card-header">
+          <svg class="tool-icon" viewBox="0 0 24 24" fill="none" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="4" y="2" width="16" height="20"/><line x1="8" y1="6" x2="16" y2="6"/><line x1="8" y1="11" x2="8.01" y2="11"/><line x1="12" y1="11" x2="12.01" y2="11"/><line x1="16" y1="11" x2="16.01" y2="11"/><line x1="8" y1="15" x2="8.01" y2="15"/><line x1="12" y1="15" x2="12.01" y2="15"/><line x1="16" y1="15" x2="16.01" y2="15"/><line x1="8" y1="19" x2="8.01" y2="19"/><line x1="12" y1="19" x2="12.01" y2="19"/><line x1="16" y1="19" x2="16.01" y2="19"/></svg>
+          <div>
+            <div class="tool-name">Culture<br>Relevance<br>Calculator</div>
+            <div class="tool-keyword">Calculate a brand's cultural relevance score</div>
+          </div>
+        </div>
+        <div class="tool-card-body">
+          <div class="tool-tags">
+            <span class="tool-tag">Cultural scoring</span>
+            <span class="tool-tag">Trend alignment</span>
+            <span class="tool-tag">Pitch-ready report</span>
+            <span class="tool-tag">Audience insights</span>
+          </div>
+          <a href="https://rebuildmultiplierindex-staging-ga.up.railway.app/" target="_blank" class="tool-cta">Use tool →</a>
+        </div>
+      </div>
+
+      <!-- 03 Culture Calendar - LIVE -->
+      <div class="tool-card live-alt">
+        <div class="tool-card-header">
+          <svg class="tool-icon" viewBox="0 0 24 24" fill="none" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="5" width="18" height="16" rx="1"/><line x1="3" y1="10" x2="21" y2="10"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="16" y1="2" x2="16" y2="6"/><rect x="6.5" y="13" width="3" height="3"/><rect x="14.5" y="13" width="3" height="3"/></svg>
+          <div>
+            <div class="tool-name">Culture<br>Calendar</div>
+            <div class="tool-keyword">Know which cultural moments matter and when</div>
+          </div>
+        </div>
+        <div class="tool-card-body">
+          <div class="tool-tags">
+            <span class="tool-tag">Moment tracking</span>
+            <span class="tool-tag">Campaign timing</span>
+            <span class="tool-tag">Trend calendar</span>
+            <span class="tool-tag">Activation planning</span>
+          </div>
+          <a href="https://culturecalendars.com/" target="_blank" class="tool-cta">Use tool →</a>
+        </div>
+      </div>
+
+      <!-- 04 Brief Builder - COMING SOON -->
+      <div class="tool-card coming-soon">
+        <div class="tool-headline"><span>Brief Builder</span></div>
+        <div class="ribbon-band band-a"><span>Coming soon&nbsp;&nbsp;•&nbsp;&nbsp;Coming soon&nbsp;&nbsp;•&nbsp;&nbsp;Coming soon&nbsp;&nbsp;•&nbsp;&nbsp;Coming soon&nbsp;&nbsp;•&nbsp;&nbsp;Coming soon</span></div>
+        <div class="ribbon-band band-b"><span>Coming soon&nbsp;&nbsp;•&nbsp;&nbsp;Coming soon&nbsp;&nbsp;•&nbsp;&nbsp;Coming soon&nbsp;&nbsp;•&nbsp;&nbsp;Coming soon&nbsp;&nbsp;•&nbsp;&nbsp;Coming soon</span></div>
+        <a href="#newsletter" class="tool-cta waitlist">Join waitlist →</a>
+      </div>
+
+      <!-- 05 AI Sports Image Generator - COMING SOON -->
+      <div class="tool-card coming-soon">
+        <div class="tool-headline"><span>AI Sports Image Generator</span></div>
+        <div class="ribbon-band" style="top:20%; transform:rotate(8deg);"><span>Coming soon&nbsp;&nbsp;•&nbsp;&nbsp;Coming soon&nbsp;&nbsp;•&nbsp;&nbsp;Coming soon&nbsp;&nbsp;•&nbsp;&nbsp;Coming soon&nbsp;&nbsp;•&nbsp;&nbsp;Coming soon</span></div>
+        <div class="ribbon-band" style="top:66%; transform:rotate(-10deg);"><span>Coming soon&nbsp;&nbsp;•&nbsp;&nbsp;Coming soon&nbsp;&nbsp;•&nbsp;&nbsp;Coming soon&nbsp;&nbsp;•&nbsp;&nbsp;Coming soon&nbsp;&nbsp;•&nbsp;&nbsp;Coming soon</span></div>
+        <a href="#newsletter" class="tool-cta waitlist">Join waitlist →</a>
+      </div>
+
+      <!-- 06 Influencer Finder - COMING SOON -->
+      <div class="tool-card coming-soon">
+        <div class="tool-headline"><span>Influencer Finder</span></div>
+        <div class="ribbon-band" style="top:18%; transform:rotate(-12deg);"><span>Coming soon&nbsp;&nbsp;•&nbsp;&nbsp;Coming soon&nbsp;&nbsp;•&nbsp;&nbsp;Coming soon&nbsp;&nbsp;•&nbsp;&nbsp;Coming soon&nbsp;&nbsp;•&nbsp;&nbsp;Coming soon</span></div>
+        <div class="ribbon-band" style="top:64%; transform:rotate(16deg);"><span>Coming soon&nbsp;&nbsp;•&nbsp;&nbsp;Coming soon&nbsp;&nbsp;•&nbsp;&nbsp;Coming soon&nbsp;&nbsp;•&nbsp;&nbsp;Coming soon&nbsp;&nbsp;•&nbsp;&nbsp;Coming soon</span></div>
+        <a href="#newsletter" class="tool-cta waitlist">Join waitlist →</a>
+      </div>
+
+    </div>
+  </div>
+</section>
+
+<!-- AGENCY STRIP + NEWSLETTER CTA (merged onto one line, CTA centered) -->
+<div class="agency-strip" id="newsletter">
+  <div class="agency-strip-copy">
+    <p class="agency-lead">Multiplier Labs is where we experiment, build and share.</p>
+    <p>These tools come from real client challenges and things we've built along the way to do better work for our clients. We're sharing them so you can put them to work too. And when you need to take an idea beyond what a tool can&nbsp;do, that's where we come&nbsp;in.</p>
+  </div>
+  <div class="agency-strip-cta">
+    <span class="agency-cta-label">Get early access to new tools</span>
+    <div class="newsletter-form" id="newsletterForm">
+      <input type="email" id="emailInput" placeholder="your@agency.com">
+      <button class="btn-subscribe" onclick="handleSubscribe()">Subscribe →</button>
+    </div>
+    <div class="newsletter-confirm" id="newsletterConfirm">
+      <div class="confirm-icon">
+        <svg viewBox="0 0 20 20" fill="none">
+          <polyline points="4,10 8,14 16,6" stroke="#ffffff" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/>
+        </svg>
+      </div>
+      <span class="confirm-title">You're in.</span>
+    </div>
+  </div>
+  <a href="https://multiplier.co" target="_blank" class="agency-link">Visit the Agency →</a>
+</div>
+
+<!-- FOOTER -->
+<footer>
+  <a href="#" class="footer-logo">
+    <span class="fl-m">Multiplier</span>
+    <span class="fl-l">Labs</span>
+  </a>
+  <ul class="footer-links">
+    <li><a href="#">Privacy</a></li>
+    <li><a href="#">Terms</a></li>
+    <li><a href="#">Contact</a></li>
+  </ul>
+  <p class="footer-copy">© 2026 Multiplier. All rights reserved.</p>
+</footer>
+
+<script>
+  // Submits silently to the "Multiplier Labs — Email Signups Form" Google Form,
+  // which is linked to the "Multiplier Labs — Email Signups" Google Sheet.
+  // Uses a hidden iframe so the visitor never leaves this page or sees Google Forms.
+  const GFORM_ACTION = "https://docs.google.com/forms/d/e/1FAIpQLSeX2LuIpNGN1a2YIuXnByoZSsNGHBy9bblyVa4qHKPQBrLj0Q/formResponse";
+  const GFORM_EMAIL_FIELD = "entry.778182506";
+
+  function submitToSheet(email) {
+    var iframe = document.getElementById('gformTargetFrame');
+    if (!iframe) {
+      iframe = document.createElement('iframe');
+      iframe.name = 'gformTargetFrame';
+      iframe.id = 'gformTargetFrame';
+      iframe.style.display = 'none';
+      document.body.appendChild(iframe);
+    }
+    var form = document.createElement('form');
+    form.action = GFORM_ACTION;
+    form.method = 'POST';
+    form.target = 'gformTargetFrame';
+    var input = document.createElement('input');
+    input.type = 'hidden';
+    input.name = GFORM_EMAIL_FIELD;
+    input.value = email;
+    form.appendChild(input);
+    document.body.appendChild(form);
+    form.submit();
+    form.remove();
+  }
+
+  function handleSubscribe() {
+    const email = document.getElementById('emailInput').value;
+    if (!email || !email.includes('@')) {
+      document.getElementById('emailInput').style.borderColor = 'var(--ultra-coral)';
+      return;
+    }
+    submitToSheet(email);
+    document.getElementById('newsletterForm').classList.add('hidden');
+    document.getElementById('newsletterConfirm').classList.add('visible');
+  }
+  document.getElementById('emailInput').addEventListener('keydown', function(e) {
+    if (e.key === 'Enter') handleSubscribe();
+  });
+
+  function toggleNav() {
+    var links = document.getElementById('navLinks');
+    var btn = document.getElementById('navToggle');
+    var isOpen = links.classList.toggle('open');
+    btn.setAttribute('aria-expanded', isOpen ? 'true' : 'false');
+  }
+  function closeNav() {
+    document.getElementById('navLinks').classList.remove('open');
+    document.getElementById('navToggle').setAttribute('aria-expanded', 'false');
+  }
+
+</script>
+</div>
+</body>
+</html>
