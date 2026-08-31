@@ -94,6 +94,7 @@ export const config: VercelConfig = {
       `${heatCheckOrigin}/labs/heat-check/:path*`,
       { requestHeaders: protectedRequestHeaders },
     ),
+    previewRewrite("/", `${webflowOrigin}/`),
     previewRewrite("/:path*", `${webflowOrigin}/:path*`),
   ],
 };

@@ -40,6 +40,7 @@ test("programmatic route configuration keeps Labs routes ahead of Webflow fallba
   const brandIndex = configSource.indexOf('"/labs/brand-heat-check"');
   const propertyIndex = configSource.indexOf('"/labs/property-pulse"');
   const heatCheckIndex = configSource.indexOf('"/labs/heat-check"');
+  const webflowRootIndex = configSource.indexOf('previewRewrite("/",');
   const webflowIndex = configSource.indexOf('previewRewrite("/:path*"');
   const filesystemIndex = configSource.indexOf('{ handle: "filesystem" }');
   assert.ok(labsIndex >= 0);
@@ -48,7 +49,8 @@ test("programmatic route configuration keeps Labs routes ahead of Webflow fallba
   assert.ok(filesystemIndex < brandIndex);
   assert.ok(brandIndex < propertyIndex);
   assert.ok(propertyIndex < heatCheckIndex);
-  assert.ok(heatCheckIndex < webflowIndex);
+  assert.ok(heatCheckIndex < webflowRootIndex);
+  assert.ok(webflowRootIndex < webflowIndex);
   assert.match(configSource, /https:\/\/multiplier-cb687a\.webflow\.io/);
   assert.match(configSource, /deploymentEnv\("HEAT_CHECK_BYPASS_SECRET"\)/);
 });
