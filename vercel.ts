@@ -44,6 +44,11 @@ export const config: VercelConfig = {
     previewRewrite("/sitemap.xml", "/sitemap-preview.xml"),
     previewRewrite("/llms.txt", "/llms-preview.txt"),
     previewRewrite(
+      "/nvhc9u4gxsagNjhmN2Q0YTJmNzdkOWVmODg0YmUxMWU0/BpqbGJqIzZ2Zgco6Nxjgu8tdmEk",
+      "/preview-analytics-disabled.js",
+    ),
+    { handle: "filesystem" },
+    previewRewrite(
       "/labs/brand-heat-check",
       `${heatCheckOrigin}/labs/brand-heat-check`,
       { requestHeaders: protectedRequestHeaders },
@@ -88,10 +93,6 @@ export const config: VercelConfig = {
       "/labs/heat-check/:path*",
       `${heatCheckOrigin}/labs/heat-check/:path*`,
       { requestHeaders: protectedRequestHeaders },
-    ),
-    previewRewrite(
-      "/nvhc9u4gxsagNjhmN2Q0YTJmNzdkOWVmODg0YmUxMWU0/BpqbGJqIzZ2Zgco6Nxjgu8tdmEk",
-      "/preview-analytics-disabled.js",
     ),
     previewRewrite("/:path*", `${webflowOrigin}/:path*`),
   ],

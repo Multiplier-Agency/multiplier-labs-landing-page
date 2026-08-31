@@ -41,8 +41,11 @@ test("programmatic route configuration keeps Labs routes ahead of Webflow fallba
   const propertyIndex = configSource.indexOf('"/labs/property-pulse"');
   const heatCheckIndex = configSource.indexOf('"/labs/heat-check"');
   const webflowIndex = configSource.indexOf('previewRewrite("/:path*"');
+  const filesystemIndex = configSource.indexOf('{ handle: "filesystem" }');
   assert.ok(labsIndex >= 0);
   assert.ok(labsIndex < brandIndex);
+  assert.ok(labsIndex < filesystemIndex);
+  assert.ok(filesystemIndex < brandIndex);
   assert.ok(brandIndex < propertyIndex);
   assert.ok(propertyIndex < heatCheckIndex);
   assert.ok(heatCheckIndex < webflowIndex);
