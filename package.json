@@ -1,0 +1,12 @@
+{
+  "name": "multiplier-labs-front-door",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "test": "node --test"
+  },
+  "devDependencies": {
+    "@vercel/config": "0.7.0"
+  }
+}
