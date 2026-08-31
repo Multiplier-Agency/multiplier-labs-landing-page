@@ -132,7 +132,6 @@ export function buildFrontDoorConfig({
   }
 
   routeList.push(
-    redirect("/multiplier-labs-landing-page.html", "/labs"),
     { handle: "filesystem" },
     rewrite(
       "/labs/brand-heat-check",
