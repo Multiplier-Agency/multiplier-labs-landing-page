@@ -10,7 +10,7 @@ if (!isRehearsalEnvironment(process.env.VERCEL_ENV)) {
   throw new Error("The front-door rehearsal may only be built for Vercel Preview.");
 }
 
-const heatCheckOrigin = "https://multiplier-heat-check-git-codex-about-re-52826a-multiplier-labs.vercel.app";
+const heatCheckOrigin = "https://multiplier-heat-check-qeguqny13-multiplier-labs.vercel.app";
 const webflowOrigin = "https://multiplier-cb687a.webflow.io";
 const noIndexHeaders = {
   "x-robots-tag": "noindex, nofollow, noarchive",
