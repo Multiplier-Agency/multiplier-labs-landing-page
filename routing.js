@@ -1,5 +1,5 @@
 export const PREVIEW_HEAT_CHECK_ORIGIN =
-  "https://multiplier-heat-check-rhehdt9t2-multiplier-labs.vercel.app";
+  "https://multiplier-heat-check-o748449mt-multiplier-labs.vercel.app";
 export const PREVIEW_WEBFLOW_ORIGIN = "https://multiplier-cb687a.webflow.io";
 
 const HEAT_CHECK_PREFIXES = [
