@@ -1,6 +1,7 @@
 import assert from "node:assert/strict";
 import { readFile } from "node:fs/promises";
 import test from "node:test";
+import { runInNewContext } from "node:vm";
 import {
   PREVIEW_HEAT_CHECK_ORIGIN,
   getFrontDoorEnvironment,
@@ -255,6 +256,173 @@ test("Labs source links to canonical routes and loads host-gated Production anal
   assert.match(html, /rel="canonical" href="https:\/\/www\.multiplier\.co\/labs"/);
   assert.match(analytics, /hostname\.toLowerCase\(\) !== "www\.multiplier\.co"/);
   assert.match(analytics, /G-G59ZHX4YS9/);
+});
+
+test("Labs landing page includes the approved copy, card behavior, ticker, and signup target", async () => {
+  const html = await readFile(new URL("../multiplier-labs-landing-page.html", import.meta.url), "utf8");
+  const approvedCopy = [
+    "Tools to navigate cultural relevance",
+    "See how a brand is showing up across culture and what is driving its relevance. Understand the signals, strengths, and momentum shaping its cultural position.",
+    "Evaluate the strength, momentum, and relevance of a sports, music, entertainment, or cultural property. Understand where it is resonating, how its position is evolving, and what that means for potential partners.",
+    "Identify the cultural moments that matter throughout the year.",
+    "Turn any assignment into a structured team brief.",
+    "Find the creators who best fit your brand.",
+    "Multiplier Labs is where we experiment, build, and share.",
+  ];
+  for (const copy of approvedCopy) assert.ok(html.includes(copy), copy);
+  assert.match(html, /Generate editorial-style sports visuals in seconds/);
+  assert.doesNotMatch(html, /Agency tools for the modern marketer/);
+  assert.doesNotMatch(html, /experiment, build and share/);
+  assert.doesNotMatch(html, /class="tool-tags?"/);
+
+  const expectedPartners = [
+    "3M",
+    "Amazon Leo",
+    "Bridgestone",
+    "Caterpillar",
+    "Chase Sapphire",
+    "ESPN",
+    "Front Office Sports",
+    "GEODIS",
+    "Invisalign",
+    "J.P. Morgan Payments",
+    "MLB Players Association",
+    "PitchBook",
+    "Raymond James",
+    "Saratoga Spring Water",
+    "Sheppard Pratt",
+    "Total Wine &amp; More",
+    "UPMC",
+    "Winnebago Industries",
+    "Wyndham Hotels &amp; Resorts",
+  ];
+  const partners = [...html.matchAll(/<div class="marquee-item"><span>([^<]+)<\/span><\/div>/g)]
+    .map((match) => match[1]);
+  assert.equal(partners.length, expectedPartners.length * 2);
+  assert.deepEqual(partners.slice(0, expectedPartners.length), expectedPartners);
+  assert.deepEqual(partners.slice(expectedPartners.length), expectedPartners);
+
+  const anchorTags = html.match(/<a\b[^>]*>/g) ?? [];
+  const attribute = (tag, name) => tag.match(new RegExp(`\\b${name}="([^"]*)"`))?.[1];
+  const hasClass = (tag, className) => (attribute(tag, "class") ?? "").split(/\s+/).includes(className);
+  const expectedNewTabLinks = [
+    {
+      className: "nav-tool-link",
+      href: "https://www.multiplier.co/labs/brand-heat-check",
+      labsPath: "/labs/brand-heat-check",
+    },
+    {
+      className: "nav-tool-link",
+      href: "https://www.multiplier.co/labs/property-pulse",
+      labsPath: "/labs/property-pulse",
+    },
+    {
+      className: "tool-card",
+      href: "https://www.multiplier.co/labs/brand-heat-check",
+      labsPath: "/labs/brand-heat-check",
+    },
+    {
+      className: "tool-card",
+      href: "https://www.multiplier.co/labs/property-pulse",
+      labsPath: "/labs/property-pulse",
+    },
+    { className: "nav-agency", href: "https://www.multiplier.co/" },
+    { className: "agency-link", href: "https://www.multiplier.co/" },
+  ];
+  for (const expected of expectedNewTabLinks) {
+    const matches = anchorTags.filter((tag) => (
+      hasClass(tag, expected.className)
+      && attribute(tag, "href") === expected.href
+      && (expected.labsPath === undefined || attribute(tag, "data-labs-path") === expected.labsPath)
+    ));
+    assert.equal(matches.length, 1, `${expected.className}: ${expected.href}`);
+    assert.equal(attribute(matches[0], "target"), "_blank");
+    assert.ok((attribute(matches[0], "rel") ?? "").split(/\s+/).includes("noopener"));
+  }
+
+  const blankAnchors = anchorTags.filter((tag) => attribute(tag, "target") === "_blank");
+  assert.equal(blankAnchors.length, expectedNewTabLinks.length);
+
+  const liveCardAnchors = anchorTags.filter((tag) => hasClass(tag, "tool-card"));
+  assert.equal(liveCardAnchors.length, 2);
+  assert.equal((html.match(/<span class="tool-cta">Use tool →<\/span>/g) ?? []).length, 2);
+  assert.equal((html.match(/<div class="tool-card coming-soon">/g) ?? []).length, 4);
+  assert.equal((html.match(/<a href="#newsletter" class="tool-cta waitlist">/g) ?? []).length, 4);
+
+  const navLogo = anchorTags.find((tag) => hasClass(tag, "nav-logo")) ?? "";
+  const footerLogo = anchorTags.find((tag) => hasClass(tag, "footer-logo")) ?? "";
+  assert.notEqual(navLogo, "");
+  assert.notEqual(footerLogo, "");
+  assert.notEqual(attribute(navLogo, "target"), "_blank");
+  assert.notEqual(attribute(footerLogo, "target"), "_blank");
+
+  assert.match(html, /\.tools-grid \{[^}]*gap: 3px;[^}]*background: transparent;/);
+  assert.match(html, /\.tool-card\.coming-soon \{[^}]*border: none;/);
+  assert.match(html, /\.tool-card-header \{[^}]*border-bottom: none;/);
+  assert.match(html, /\.tool-card\.coming-soon \.tool-card-header \{[\s\S]*?border-bottom: none;/);
+  assert.match(html, /\.tool-card\.coming-soon \.tool-card-body \{[^}]*flex: 1;[^}]*justify-content: flex-end;/);
+  assert.match(html, /a\.tool-card:hover,[\s\S]*?transform: translateY\(-2px\);/);
+
+  assert.match(
+    html,
+    /const GFORM_ACTION = "https:\/\/docs\.google\.com\/forms\/d\/e\/1FAIpQLSeX2LuIpNGN1a2YIuXnByoZSsNGHBy9bblyVa4qHKPQBrLj0Q\/formResponse";/,
+  );
+  assert.match(html, /const GFORM_EMAIL_FIELD = "entry\.778182506";/);
+  assert.match(html, /form\.action = GFORM_ACTION;/);
+  assert.match(html, /input\.name = GFORM_EMAIL_FIELD;/);
+});
+
+test("Labs signup builds the expected Google Form request without sending it", async () => {
+  const html = await readFile(new URL("../multiplier-labs-landing-page.html", import.meta.url), "utf8");
+  const signupScript = html.match(
+    /const GFORM_ACTION[\s\S]*?(?=\n\s*function handleSubscribe)/,
+  )?.[0];
+  assert.ok(signupScript);
+
+  let capturedRequest;
+  const document = {
+    getElementById() {
+      return null;
+    },
+    createElement(tagName) {
+      if (tagName === "iframe") return { style: {} };
+      if (tagName === "input") return {};
+      if (tagName === "form") {
+        return {
+          child: null,
+          appendChild(input) {
+            this.child = input;
+          },
+          submit() {
+            capturedRequest = {
+              action: this.action,
+              method: this.method,
+              target: this.target,
+              field: { ...this.child },
+            };
+          },
+          remove() {},
+        };
+      }
+      throw new Error(`Unexpected element: ${tagName}`);
+    },
+    body: {
+      appendChild() {},
+    },
+  };
+
+  runInNewContext(`${signupScript}\nsubmitToSheet("qa+labs@example.com");`, { document });
+
+  assert.deepEqual(capturedRequest, {
+    action: "https://docs.google.com/forms/d/e/1FAIpQLSeX2LuIpNGN1a2YIuXnByoZSsNGHBy9bblyVa4qHKPQBrLj0Q/formResponse",
+    method: "POST",
+    target: "gformTargetFrame",
+    field: {
+      type: "hidden",
+      name: "entry.778182506",
+      value: "qa+labs@example.com",
+    },
+  });
 });
 
 test("Production discovery files expose public pages and exclude private report surfaces", async () => {
