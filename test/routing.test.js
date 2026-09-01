@@ -1,7 +1,10 @@
 import assert from "node:assert/strict";
-import { access, readFile } from "node:fs/promises";
+import { access, mkdtemp, readFile, readdir, rm } from "node:fs/promises";
+import { tmpdir } from "node:os";
+import { join } from "node:path";
 import test from "node:test";
 import { runInNewContext } from "node:vm";
+import { buildStaticSite } from "../scripts/build-static.mjs";
 import {
   buildLabsConfig,
   isPreviewDeployment,
@@ -12,13 +15,7 @@ function serialized(config) {
   return JSON.stringify(config);
 }
 
-function routeByDestination(config, destination) {
-  return config.routes.find(
-    (route) => route.destination === destination || route.dest === destination,
-  );
-}
-
-test("Preview is noindex and serves only local Labs files", () => {
+test("Preview is noindex and serves only the dedicated build output", () => {
   const preview = buildLabsConfig({ vercelEnvironment: "preview" });
   const source = serialized(preview);
 
@@ -32,10 +29,9 @@ test("Preview is noindex and serves only local Labs files", () => {
     continue: true,
   });
 
-  assert.ok(routeByDestination(preview, "/multiplier-labs-landing-page.html"));
-  assert.ok(routeByDestination(preview, "/robots-preview.txt"));
-  assert.ok(routeByDestination(preview, "/sitemap-preview.xml"));
-  assert.ok(routeByDestination(preview, "/llms-preview.txt"));
+  assert.equal(preview.buildCommand, "npm run build");
+  assert.equal(preview.outputDirectory, "dist");
+  assert.ok(!preview.routes.some((route) => route.destination || route.dest));
   assert.doesNotMatch(source, /https?:\/\//);
   assert.doesNotMatch(source, /bypass|webflow|heat.?check/i);
 
@@ -53,13 +49,74 @@ test("Production serves the standalone Labs root and public discovery files", ()
   const source = serialized(production);
 
   assert.ok(!production.routes.some((route) => route.continue));
-  assert.ok(routeByDestination(production, "/multiplier-labs-landing-page.html"));
-  assert.ok(routeByDestination(production, "/robots-production.txt"));
-  assert.ok(routeByDestination(production, "/sitemap-production.xml"));
-  assert.ok(routeByDestination(production, "/llms-production.txt"));
-  assert.doesNotMatch(source, /robots-preview\.txt|sitemap-preview\.xml|llms-preview\.txt/);
+  assert.equal(production.buildCommand, "npm run build");
+  assert.equal(production.outputDirectory, "dist");
+  assert.ok(!production.routes.some((route) => route.destination || route.dest));
   assert.doesNotMatch(source, /https?:\/\//);
   assert.doesNotMatch(source, /bypass|webflow|railway|heat.?check/i);
+});
+
+test("Production output exposes only the allowlisted Labs surface", async (context) => {
+  const outputDirectory = await mkdtemp(join(tmpdir(), "multiplier-labs-production-"));
+  context.after(() => rm(outputDirectory, { recursive: true, force: true }));
+
+  await buildStaticSite({ environment: "production", outputDirectory });
+  const publicFiles = (await readdir(outputDirectory)).sort();
+  assert.deepEqual(publicFiles, [
+    "index.html",
+    "labs-analytics.js",
+    "llms.txt",
+    "robots.txt",
+    "sitemap.xml",
+  ]);
+
+  const rootHtml = await readFile(join(outputDirectory, "index.html"), "utf8");
+  assert.match(rootHtml, /rel="canonical" href="https:\/\/labs\.multiplier\.co\/"/);
+  assert.match(
+    await readFile(join(outputDirectory, "robots.txt"), "utf8"),
+    /Sitemap: https:\/\/labs\.multiplier\.co\/sitemap\.xml/,
+  );
+
+  for (const privateArtifact of [
+    "multiplier-labs-landing-page.html",
+    "package.json",
+    "README.md",
+    "vercel.ts",
+    "vercel-labs.js",
+    "robots-preview.txt",
+    "sitemap-preview.xml",
+    "llms-preview.txt",
+    "test",
+    "scripts",
+    ".env.local",
+  ]) {
+    await assert.rejects(access(join(outputDirectory, privateArtifact)));
+  }
+
+  const production = buildLabsConfig({ vercelEnvironment: "production" });
+  const filesystemIndex = production.routes.findIndex((route) => route.handle === "filesystem");
+  const notFoundIndex = production.routes.findIndex((route) => route.status === 404);
+  assert.ok(filesystemIndex >= 0);
+  assert.ok(notFoundIndex > filesystemIndex);
+});
+
+test("Preview output uses private discovery files while keeping the root available", async (context) => {
+  const outputDirectory = await mkdtemp(join(tmpdir(), "multiplier-labs-preview-"));
+  context.after(() => rm(outputDirectory, { recursive: true, force: true }));
+
+  await buildStaticSite({ environment: "preview", outputDirectory });
+  assert.match(
+    await readFile(join(outputDirectory, "index.html"), "utf8"),
+    /<title>Multiplier Labs<\/title>/,
+  );
+  assert.match(
+    await readFile(join(outputDirectory, "robots.txt"), "utf8"),
+    /Disallow: \//,
+  );
+  assert.equal(
+    (await readFile(join(outputDirectory, "sitemap.xml"), "utf8")).includes("<loc>"),
+    false,
+  );
 });
 
 test("Labs source uses the subdomain canonical and direct product links", async () => {

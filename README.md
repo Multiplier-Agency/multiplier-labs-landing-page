@@ -11,6 +11,11 @@ This repository contains the standalone Multiplier Labs site published at
 - All other unknown paths return `404` and are marked `noindex`.
 - There are no Webflow proxies, product rewrites, Railway fallbacks, or cross-project protection-bypass requests.
 
+`npm run build` creates an allowlisted `dist` directory containing only the public
+HTML entry point, analytics script, optional image/font asset directories, and the
+environment-appropriate discovery files. Repository source, tests, configuration,
+and Preview-only source files are not published.
+
 Preview deployments are globally marked `noindex` and use the Preview versions of
 `robots.txt`, `sitemap.xml`, and `llms.txt`. Production serves the public discovery
 files for the Labs root only.
