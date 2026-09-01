@@ -2,6 +2,7 @@ import assert from "node:assert/strict";
 import { readFile } from "node:fs/promises";
 import test from "node:test";
 import {
+  PREVIEW_HEAT_CHECK_ORIGIN,
   getFrontDoorEnvironment,
   isHeatCheckPath,
   isRehearsalEnvironment,
@@ -130,7 +131,7 @@ test("Preview config applies global noindex and keeps bypass and analytics suppr
   });
   assert.match(source, /HEAT_CHECK_BYPASS_SECRET/);
   assert.match(source, /preview-analytics-disabled\.js/);
-  assert.match(source, /multiplier-heat-check-qeguqny13-multiplier-labs\.vercel\.app/);
+  assert.ok(source.includes(PREVIEW_HEAT_CHECK_ORIGIN));
   assert.match(source, /multiplier-cb687a\.webflow\.io/);
   assert.doesNotMatch(source, /robots-production\.txt/);
 
@@ -138,7 +139,7 @@ test("Preview config applies global noindex and keeps bypass and analytics suppr
   const filesystemIndex = preview.routes.findIndex((route) => route.handle === "filesystem");
   const brandIndex = routeIndexByDestination(
     preview,
-    "https://multiplier-heat-check-qeguqny13-multiplier-labs.vercel.app/labs/brand-heat-check",
+    `${PREVIEW_HEAT_CHECK_ORIGIN}/labs/brand-heat-check`,
   );
   const webflowIndex = routeIndexByDestination(
     preview,
@@ -156,7 +157,7 @@ test("Production config omits Preview controls and makes public and private rout
 
   assert.doesNotMatch(source, /HEAT_CHECK_BYPASS_SECRET/);
   assert.doesNotMatch(source, /preview-analytics-disabled\.js/);
-  assert.doesNotMatch(source, /qeguqny13/);
+  assert.ok(!source.includes(new URL(PREVIEW_HEAT_CHECK_ORIGIN).hostname));
   assert.ok(!production.routes.some((route) => route.continue));
   assert.match(source, /robots-production\.txt/);
   assert.match(source, /sitemap-production\.xml/);
