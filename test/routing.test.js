@@ -230,9 +230,12 @@ test("Labs source links to canonical routes and loads host-gated Production anal
   const html = await readFile(new URL("../multiplier-labs-landing-page.html", import.meta.url), "utf8");
   const analytics = await readFile(new URL("../labs-analytics.js", import.meta.url), "utf8");
 
-  assert.match(html, /href="\/labs\/brand-heat-check"/);
-  assert.match(html, /href="\/labs\/property-pulse"/);
-  assert.match(html, /href="\/labs" class="nav-logo"/);
+  assert.match(html, /data-labs-path="\/labs\/brand-heat-check"/);
+  assert.match(html, /data-labs-path="\/labs\/property-pulse"/);
+  assert.match(html, /data-labs-path="\/labs" class="nav-logo"/);
+  assert.equal((html.match(/data-labs-path=/g) ?? []).length, 6);
+  assert.doesNotMatch(html, /href="\/labs(?:\/|")/);
+  assert.match(html, /FILE_PREVIEW_FRONT_DOOR_ORIGIN = "https:\/\/multiplier-labs-preview-git-codex-front-15db8f-multiplier-labs\.vercel\.app"/);
   assert.match(html, /id="toolsMenuButton"[^>]+aria-haspopup="true"[^>]+aria-expanded="false"/);
   assert.match(html, /id="toolsMenu"[^>]+hidden/);
   assert.match(html, /Culture Calendar Generator/);
