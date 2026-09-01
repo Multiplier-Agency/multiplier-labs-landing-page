@@ -8,7 +8,12 @@ export function isPreviewDeployment(vercelEnvironment) {
 
 export function buildLabsConfig({ vercelEnvironment } = {}) {
   const preview = isPreviewDeployment(vercelEnvironment);
-  const routeList = [];
+  const routeList = [{
+    src: "^/(.*)$",
+    has: [{ type: "host", value: ".*\\.vercel\\.app" }],
+    headers: NO_INDEX_HEADERS,
+    continue: true,
+  }];
 
   if (preview) {
     routeList.push({

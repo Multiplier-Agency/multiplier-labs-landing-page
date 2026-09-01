@@ -25,6 +25,12 @@ test("Preview is noindex and serves only the dedicated build output", () => {
   assert.equal(isPreviewDeployment("production"), false);
   assert.deepEqual(preview.routes[0], {
     src: "^/(.*)$",
+    has: [{ type: "host", value: ".*\\.vercel\\.app" }],
+    headers: NO_INDEX_HEADERS,
+    continue: true,
+  });
+  assert.deepEqual(preview.routes[1], {
+    src: "^/(.*)$",
     headers: NO_INDEX_HEADERS,
     continue: true,
   });
@@ -48,7 +54,13 @@ test("Production serves the standalone Labs root and public discovery files", ()
   const production = buildLabsConfig({ vercelEnvironment: "production" });
   const source = serialized(production);
 
-  assert.ok(!production.routes.some((route) => route.continue));
+  assert.deepEqual(production.routes[0], {
+    src: "^/(.*)$",
+    has: [{ type: "host", value: ".*\\.vercel\\.app" }],
+    headers: NO_INDEX_HEADERS,
+    continue: true,
+  });
+  assert.equal(production.routes.filter((route) => route.continue).length, 1);
   assert.equal(production.buildCommand, "npm run build");
   assert.equal(production.outputDirectory, "dist");
   assert.ok(!production.routes.some((route) => route.destination || route.dest));
