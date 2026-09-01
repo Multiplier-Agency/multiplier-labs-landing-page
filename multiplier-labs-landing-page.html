@@ -91,6 +91,81 @@ nav {
 .nav-links a:hover { color: var(--white); }
 .nav-links .nav-agency { color: rgba(255,255,255,0.5); border-bottom: 1px solid rgba(255,255,255,0.2); padding-bottom: 1px; }
 
+.nav-item-tools { position: relative; }
+.nav-tools-trigger {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 0;
+  border: 0;
+  background: transparent;
+  color: rgba(255,255,255,0.6);
+  font: inherit;
+  font-size: 13px;
+  font-weight: 500;
+  letter-spacing: 0.04em;
+  cursor: pointer;
+  transition: color 0.2s;
+}
+.nav-tools-trigger:hover,
+.nav-tools-trigger:focus-visible,
+.nav-tools-trigger[aria-expanded="true"] { color: var(--white); }
+.nav-tools-trigger:focus-visible { outline: 2px solid var(--ultra-coral); outline-offset: 5px; }
+.nav-tools-caret { width: 12px; height: 12px; stroke: currentColor; transition: transform 0.2s; }
+.nav-tools-trigger[aria-expanded="true"] .nav-tools-caret { transform: rotate(180deg); }
+
+.nav-tools-menu {
+  position: absolute;
+  top: calc(100% + 20px);
+  left: -18px;
+  width: 292px;
+  padding: 8px;
+  border: 1px solid rgba(255,255,255,0.12);
+  border-radius: 4px;
+  background: var(--pack-blue);
+  box-shadow: 0 18px 36px rgba(0,0,0,0.28);
+  list-style: none;
+  opacity: 0;
+  visibility: hidden;
+  transform: translateY(-6px);
+  pointer-events: none;
+  transition: opacity 0.16s ease, transform 0.16s ease, visibility 0.16s;
+}
+.nav-tools-menu.open {
+  opacity: 1;
+  visibility: visible;
+  transform: translateY(0);
+  pointer-events: auto;
+}
+.nav-links .nav-tool-link,
+.nav-tool-disabled {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  width: 100%;
+  min-height: 42px;
+  padding: 11px 12px;
+  border-radius: 2px;
+  font-size: 13px;
+  font-weight: 500;
+  letter-spacing: 0;
+}
+.nav-links .nav-tool-link { color: rgba(255,255,255,0.86); }
+.nav-links .nav-tool-link:hover,
+.nav-links .nav-tool-link:focus-visible { color: var(--white); background: rgba(255,255,255,0.07); }
+.nav-links .nav-tool-link:focus-visible { outline: 2px solid var(--ultra-coral); outline-offset: -2px; }
+.nav-tool-disabled { color: rgba(255,255,255,0.3); cursor: not-allowed; }
+.nav-tool-status {
+  flex-shrink: 0;
+  color: var(--ultra-coral);
+  font-size: 9px;
+  font-weight: 800;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+}
+.nav-tool-disabled .nav-tool-status { color: rgba(255,255,255,0.24); }
+
 .nav-toggle { display: none; background: none; border: none; cursor: pointer; padding: 8px; margin: -8px; }
 .nav-toggle svg { width: 22px; height: 22px; stroke: var(--white); display: block; }
 
@@ -609,10 +684,36 @@ footer { background: var(--pack-blue); border-top: 1px solid rgba(255,255,255,0.
     transition: max-height 0.25s ease;
     border-bottom: 1px solid rgba(255,255,255,0.08);
   }
-  .nav-links.open { max-height: 260px; }
+  .nav-links.open { max-height: calc(100vh - 64px); overflow-y: auto; }
   .nav-links li { width: 100%; }
   .nav-links a { display: block; width: 100%; padding: 16px 20px; font-size: 14px; border-top: 1px solid rgba(255,255,255,0.06); }
   .nav-links .nav-agency { border-bottom: none; }
+  .nav-tools-trigger {
+    justify-content: space-between;
+    width: 100%;
+    padding: 16px 20px;
+    border-top: 1px solid rgba(255,255,255,0.06);
+    font-size: 14px;
+  }
+  .nav-tools-trigger:focus-visible { outline-offset: -3px; }
+  .nav-tools-menu {
+    position: static;
+    width: 100%;
+    max-height: 0;
+    padding: 0 8px;
+    border: 0;
+    border-radius: 0;
+    box-shadow: none;
+    opacity: 1;
+    visibility: visible;
+    transform: none;
+    overflow: hidden;
+    pointer-events: none;
+    transition: max-height 0.22s ease, padding 0.22s ease;
+  }
+  .nav-tools-menu.open { max-height: 360px; padding: 6px 8px 10px; pointer-events: auto; }
+  .nav-links .nav-tool-link,
+  .nav-tool-disabled { min-height: 44px; padding: 12px; border-top: 0; font-size: 13px; }
 
   .hero { padding: 56px 20px 28px; }
   .hero-headline { font-size: clamp(34px, 9vw, 56px); }
@@ -661,7 +762,20 @@ footer { background: var(--pack-blue); border-top: 1px solid rgba(255,255,255,0.
     <svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="18" x2="21" y2="18"/></svg>
   </button>
   <ul class="nav-links" id="navLinks">
-    <li><a href="#tools" onclick="closeNav()">Tools</a></li>
+    <li class="nav-item-tools">
+      <button class="nav-tools-trigger" id="toolsMenuButton" type="button" aria-haspopup="true" aria-expanded="false" aria-controls="toolsMenu" onclick="toggleToolsMenu(event)">
+        <span>Tools</span>
+        <svg class="nav-tools-caret" viewBox="0 0 12 12" fill="none" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polyline points="2.5,4 6,7.5 9.5,4"/></svg>
+      </button>
+      <ul class="nav-tools-menu" id="toolsMenu" aria-labelledby="toolsMenuButton" hidden>
+        <li><a class="nav-tool-link" href="/labs/brand-heat-check" onclick="closeNav()"><span>Brand Heat Check</span><span class="nav-tool-status">Live</span></a></li>
+        <li><a class="nav-tool-link" href="/labs/property-pulse" onclick="closeNav()"><span>Property Pulse</span><span class="nav-tool-status">Live</span></a></li>
+        <li><span class="nav-tool-disabled" aria-disabled="true"><span>Culture Calendar Generator</span><span class="nav-tool-status">Coming soon</span></span></li>
+        <li><span class="nav-tool-disabled" aria-disabled="true"><span>Sports AI Image Creator</span><span class="nav-tool-status">Coming soon</span></span></li>
+        <li><span class="nav-tool-disabled" aria-disabled="true"><span>Brief Builder</span><span class="nav-tool-status">Coming soon</span></span></li>
+        <li><span class="nav-tool-disabled" aria-disabled="true"><span>Influencer Finder</span><span class="nav-tool-status">Coming soon</span></span></li>
+      </ul>
+    </li>
     <li><a href="#newsletter" onclick="closeNav()">Newsletter</a></li>
     <li><a href="https://www.multiplier.co/" class="nav-agency">Multiplier</a></li>
   </ul>
@@ -925,11 +1039,39 @@ footer { background: var(--pack-blue); border-top: 1px solid rgba(255,255,255,0.
     var btn = document.getElementById('navToggle');
     var isOpen = links.classList.toggle('open');
     btn.setAttribute('aria-expanded', isOpen ? 'true' : 'false');
+    if (!isOpen) closeToolsMenu();
+  }
+  function setToolsMenu(open) {
+    var menu = document.getElementById('toolsMenu');
+    menu.classList.toggle('open', open);
+    menu.hidden = !open;
+    document.getElementById('toolsMenuButton').setAttribute('aria-expanded', open ? 'true' : 'false');
+  }
+  function toggleToolsMenu(event) {
+    event.stopPropagation();
+    var button = document.getElementById('toolsMenuButton');
+    setToolsMenu(button.getAttribute('aria-expanded') !== 'true');
+  }
+  function closeToolsMenu() {
+    setToolsMenu(false);
   }
   function closeNav() {
     document.getElementById('navLinks').classList.remove('open');
     document.getElementById('navToggle').setAttribute('aria-expanded', 'false');
+    closeToolsMenu();
   }
+
+  document.addEventListener('click', function(event) {
+    var toolsItem = document.querySelector('.nav-item-tools');
+    if (toolsItem && !toolsItem.contains(event.target)) closeToolsMenu();
+  });
+  document.addEventListener('keydown', function(event) {
+    if (event.key !== 'Escape') return;
+    var button = document.getElementById('toolsMenuButton');
+    var wasOpen = button.getAttribute('aria-expanded') === 'true';
+    closeToolsMenu();
+    if (wasOpen) button.focus();
+  });
 
 </script>
 </div>

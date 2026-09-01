@@ -232,6 +232,14 @@ test("Labs source links to canonical routes and loads host-gated Production anal
 
   assert.match(html, /href="\/labs\/brand-heat-check"/);
   assert.match(html, /href="\/labs\/property-pulse"/);
+  assert.match(html, /href="\/labs" class="nav-logo"/);
+  assert.match(html, /id="toolsMenuButton"[^>]+aria-haspopup="true"[^>]+aria-expanded="false"/);
+  assert.match(html, /id="toolsMenu"[^>]+hidden/);
+  assert.match(html, /Culture Calendar Generator/);
+  assert.match(html, /Sports AI Image Creator/);
+  assert.match(html, /Brief Builder/);
+  assert.match(html, /Influencer Finder/);
+  assert.equal((html.match(/aria-disabled="true"/g) ?? []).length, 4);
   assert.match(html, /src="\/labs-analytics\.js"/);
   assert.doesNotMatch(html, /railway\.app/i);
   assert.match(html, /rel="canonical" href="https:\/\/www\.multiplier\.co\/labs"/);
