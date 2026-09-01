@@ -1,6 +1,6 @@
 (() => {
   const measurementId = "G-G59ZHX4YS9";
-  if (window.location.hostname.toLowerCase() !== "www.multiplier.co") return;
+  if (window.location.hostname.toLowerCase() !== "labs.multiplier.co") return;
 
   window.dataLayer = window.dataLayer || [];
   window.gtag = window.gtag || function gtag() {

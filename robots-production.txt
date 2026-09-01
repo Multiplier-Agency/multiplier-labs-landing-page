@@ -1,7 +1,4 @@
 User-agent: *
 Allow: /
-Disallow: /labs/heat-check/api
-Disallow: /labs/heat-check/pdf-render
-Disallow: /labs/heat-check/report
 
-Sitemap: https://www.multiplier.co/sitemap.xml
+Sitemap: https://labs.multiplier.co/sitemap.xml

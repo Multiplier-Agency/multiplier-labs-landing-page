@@ -2,16 +2,19 @@
 
 Multiplier Labs builds practical AI tools for brand, culture, sponsorship, and modern marketing teams.
 
-## Public pages
+## Public page
 
-- Labs: https://www.multiplier.co/labs
-- Brand Heat Check: https://www.multiplier.co/labs/brand-heat-check
+- Labs: https://labs.multiplier.co/
+
+## Live tools
+
+- Brand Heat Check: https://heatcheck.multiplier.co/
   A source-based assessment of a brand's current cultural relevance, participation, and momentum.
-- Property Pulse: https://www.multiplier.co/labs/property-pulse
+- Property Pulse: https://propertypulse.multiplier.co/
   A source-based assessment of a sports or entertainment property's cultural momentum and sponsorship potential.
 
 ## Multiplier
 
 - Agency: https://www.multiplier.co/
 
-Saved reports, report-generation APIs, and PDF-rendering routes are not public discovery pages.
+Each live tool publishes its own discovery files on its product subdomain.

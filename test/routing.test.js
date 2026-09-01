@@ -1,264 +1,90 @@
 import assert from "node:assert/strict";
-import { readFile } from "node:fs/promises";
+import { access, readFile } from "node:fs/promises";
 import test from "node:test";
 import { runInNewContext } from "node:vm";
 import {
-  PREVIEW_HEAT_CHECK_ORIGIN,
-  getFrontDoorEnvironment,
-  isHeatCheckPath,
-  isRehearsalEnvironment,
-  resolveFrontDoorOrigins,
-} from "../routing.js";
-import { buildFrontDoorConfig, NO_INDEX_HEADERS } from "../vercel-routing.js";
-
-const PRODUCTION_OPTIONS = {
-  vercelEnvironment: "production",
-  webflowProductionOrigin: "https://wf.multiplier.co",
-  heatCheckProductionOrigin: "https://multiplier-heat-check.vercel.app",
-  currentDeploymentHost: "multiplier-labs-preview.vercel.app",
-};
+  buildLabsConfig,
+  isPreviewDeployment,
+  NO_INDEX_HEADERS,
+} from "../vercel-labs.js";
 
 function serialized(config) {
   return JSON.stringify(config);
 }
 
 function routeByDestination(config, destination) {
-  return config.routes.find((route) => route.dest === destination);
+  return config.routes.find(
+    (route) => route.destination === destination || route.dest === destination,
+  );
 }
 
-function routeIndexByDestination(config, destination) {
-  return config.routes.findIndex((route) => route.dest === destination);
-}
-
-function responseHeader(route, key) {
-  const normalized = key.toLowerCase();
-  const transform = route?.transforms?.find(
-    (item) => item.type === "response.headers" && item.target?.key?.toLowerCase() === normalized,
-  );
-  return transform?.args ?? route?.headers?.[key] ?? route?.headers?.[normalized];
-}
-
-test("environment selection is safe for Preview, local development, and Production", () => {
-  assert.equal(isRehearsalEnvironment("preview"), true);
-  assert.equal(isRehearsalEnvironment("development"), true);
-  assert.equal(isRehearsalEnvironment(undefined), true);
-  assert.equal(isRehearsalEnvironment("production"), false);
-  assert.equal(getFrontDoorEnvironment("production"), "production");
-  assert.throws(() => getFrontDoorEnvironment("staging"), /Unsupported Vercel environment/);
-});
-
-test("all Heat Check product prefixes are classified with path boundaries", () => {
-  const protectedPaths = [
-    "/labs/brand-heat-check",
-    "/labs/brand-heat-check/",
-    "/labs/brand-heat-check/example",
-    "/labs/property-pulse",
-    "/labs/property-pulse/example",
-    "/labs/heat-check/api/report",
-    "/labs/heat-check/assets/index.js",
-    "/labs/heat-check/report/example-id",
-    "/labs/heat-check/pdf-render",
-  ];
-  for (const path of protectedPaths) assert.equal(isHeatCheckPath(path), true, path);
-
-  const unprotectedPaths = [
-    "/",
-    "/labs",
-    "/labs/brand-heat-checker",
-    "/labs/property-pulses",
-    "/labs/heat-checker",
-    "/labs/brief-labs",
-    "/capabilities",
-  ];
-  for (const path of unprotectedPaths) assert.equal(isHeatCheckPath(path), false, path);
-});
-
-test("Production origins are required, normalized, and protected from loops", () => {
-  assert.throws(
-    () => resolveFrontDoorOrigins({ vercelEnvironment: "production" }),
-    /WEBFLOW_PRODUCTION_ORIGIN is required/,
-  );
-  assert.throws(
-    () => resolveFrontDoorOrigins({
-      ...PRODUCTION_OPTIONS,
-      webflowProductionOrigin: "https://multiplier-cb687a.webflow.io",
-    }),
-    /must use wf\.multiplier\.co/,
-  );
-  assert.throws(
-    () => resolveFrontDoorOrigins({
-      ...PRODUCTION_OPTIONS,
-      heatCheckProductionOrigin: "https://www.multiplier.co",
-    }),
-    /cannot point to www\.multiplier\.co/,
-  );
-  assert.throws(
-    () => resolveFrontDoorOrigins({
-      ...PRODUCTION_OPTIONS,
-      heatCheckProductionOrigin: "https://rebuild.up.railway.app",
-    }),
-    /must use multiplier-heat-check\.vercel\.app/,
-  );
-  assert.throws(
-    () => resolveFrontDoorOrigins({
-      ...PRODUCTION_OPTIONS,
-      heatCheckProductionOrigin: "https://another-project.vercel.app",
-    }),
-    /must use multiplier-heat-check\.vercel\.app/,
-  );
-  assert.throws(
-    () => resolveFrontDoorOrigins({
-      ...PRODUCTION_OPTIONS,
-      heatCheckProductionOrigin: "https://multiplier-heat-check.vercel.app/path",
-    }),
-    /bare origin/,
-  );
-
-  assert.deepEqual(resolveFrontDoorOrigins(PRODUCTION_OPTIONS), {
-    environment: "production",
-    webflowOrigin: "https://wf.multiplier.co",
-    heatCheckOrigin: "https://multiplier-heat-check.vercel.app",
-  });
-});
-
-test("Preview config applies global noindex and keeps bypass and analytics suppression Preview-only", () => {
-  const preview = buildFrontDoorConfig({ vercelEnvironment: "preview" });
+test("Preview is noindex and serves only local Labs files", () => {
+  const preview = buildLabsConfig({ vercelEnvironment: "preview" });
   const source = serialized(preview);
 
+  assert.equal(isPreviewDeployment("preview"), true);
+  assert.equal(isPreviewDeployment("development"), true);
+  assert.equal(isPreviewDeployment(undefined), true);
+  assert.equal(isPreviewDeployment("production"), false);
   assert.deepEqual(preview.routes[0], {
     src: "^/(.*)$",
     headers: NO_INDEX_HEADERS,
     continue: true,
   });
-  assert.match(source, /HEAT_CHECK_BYPASS_SECRET/);
-  assert.match(source, /preview-analytics-disabled\.js/);
-  assert.ok(source.includes(PREVIEW_HEAT_CHECK_ORIGIN));
-  assert.match(source, /multiplier-cb687a\.webflow\.io/);
-  assert.doesNotMatch(source, /robots-production\.txt/);
 
-  const labsIndex = routeIndexByDestination(preview, "/multiplier-labs-landing-page.html");
+  assert.ok(routeByDestination(preview, "/multiplier-labs-landing-page.html"));
+  assert.ok(routeByDestination(preview, "/robots-preview.txt"));
+  assert.ok(routeByDestination(preview, "/sitemap-preview.xml"));
+  assert.ok(routeByDestination(preview, "/llms-preview.txt"));
+  assert.doesNotMatch(source, /https?:\/\//);
+  assert.doesNotMatch(source, /bypass|webflow|heat.?check/i);
+
   const filesystemIndex = preview.routes.findIndex((route) => route.handle === "filesystem");
-  const brandIndex = routeIndexByDestination(
-    preview,
-    `${PREVIEW_HEAT_CHECK_ORIGIN}/labs/brand-heat-check`,
+  const notFoundIndex = preview.routes.findIndex(
+    (route) => route.status === 404 && route.src === "^/(.*)$",
   );
-  const webflowIndex = routeIndexByDestination(
-    preview,
-    "https://multiplier-cb687a.webflow.io/$1",
-  );
-  assert.ok(labsIndex > 0);
-  assert.ok(labsIndex < filesystemIndex);
-  assert.ok(filesystemIndex < brandIndex);
-  assert.ok(brandIndex < webflowIndex);
+  assert.ok(filesystemIndex > 0);
+  assert.ok(notFoundIndex > filesystemIndex);
+  assert.deepEqual(preview.routes[notFoundIndex].headers, NO_INDEX_HEADERS);
 });
 
-test("Production config omits Preview controls and makes public and private routes explicit", () => {
-  const production = buildFrontDoorConfig(PRODUCTION_OPTIONS);
+test("Production serves the standalone Labs root and public discovery files", () => {
+  const production = buildLabsConfig({ vercelEnvironment: "production" });
   const source = serialized(production);
 
-  assert.doesNotMatch(source, /HEAT_CHECK_BYPASS_SECRET/);
-  assert.doesNotMatch(source, /preview-analytics-disabled\.js/);
-  assert.ok(!source.includes(new URL(PREVIEW_HEAT_CHECK_ORIGIN).hostname));
   assert.ok(!production.routes.some((route) => route.continue));
-  assert.match(source, /robots-production\.txt/);
-  assert.match(source, /sitemap-production\.xml/);
-  assert.match(source, /llms-production\.txt/);
-
-  const labs = routeByDestination(production, "/multiplier-labs-landing-page.html");
-  const brand = routeByDestination(
-    production,
-    "https://multiplier-heat-check.vercel.app/labs/brand-heat-check",
-  );
-  const property = routeByDestination(
-    production,
-    "https://multiplier-heat-check.vercel.app/labs/property-pulse",
-  );
-  const api = routeByDestination(
-    production,
-    "https://multiplier-heat-check.vercel.app/labs/heat-check/api/$1",
-  );
-  const pdf = routeByDestination(
-    production,
-    "https://multiplier-heat-check.vercel.app/labs/heat-check/pdf-render",
-  );
-  const report = routeByDestination(
-    production,
-    "https://multiplier-heat-check.vercel.app/labs/heat-check/report/$1",
-  );
-
-  assert.equal(responseHeader(labs, "x-robots-tag"), "index, follow");
-  assert.equal(responseHeader(brand, "x-robots-tag"), "index, follow");
-  assert.equal(responseHeader(property, "x-robots-tag"), "index, follow");
-  const nestedBrand = routeByDestination(
-    production,
-    "https://multiplier-heat-check.vercel.app/labs/brand-heat-check/$1",
-  );
-  const nestedProperty = routeByDestination(
-    production,
-    "https://multiplier-heat-check.vercel.app/labs/property-pulse/$1",
-  );
-  assert.equal(responseHeader(nestedBrand, "x-robots-tag"), "noindex, nofollow, noarchive");
-  assert.equal(responseHeader(nestedProperty, "x-robots-tag"), "noindex, nofollow, noarchive");
-  for (const route of [api, pdf, report]) {
-    assert.equal(responseHeader(route, "cache-control"), "no-store");
-    assert.equal(responseHeader(route, "x-robots-tag"), "noindex, nofollow, noarchive");
-  }
-
-  const labsIndex = production.routes.indexOf(labs);
-  const brandIndex = production.routes.indexOf(brand);
-  const unknownLabsIndex = production.routes.findIndex(
-    (route) => route.src === "^/labs(?:/.*)?$" && route.status === 404,
-  );
-  const webflowIndex = routeIndexByDestination(production, "https://wf.multiplier.co/$1");
-  assert.ok(labsIndex < brandIndex);
-  assert.ok(brandIndex < unknownLabsIndex);
-  assert.ok(unknownLabsIndex < webflowIndex);
+  assert.ok(routeByDestination(production, "/multiplier-labs-landing-page.html"));
+  assert.ok(routeByDestination(production, "/robots-production.txt"));
+  assert.ok(routeByDestination(production, "/sitemap-production.xml"));
+  assert.ok(routeByDestination(production, "/llms-production.txt"));
+  assert.doesNotMatch(source, /robots-preview\.txt|sitemap-preview\.xml|llms-preview\.txt/);
+  assert.doesNotMatch(source, /https?:\/\//);
+  assert.doesNotMatch(source, /bypass|webflow|railway|heat.?check/i);
 });
 
-test("Production includes canonical and legacy redirects without changing Preview", () => {
-  const preview = serialized(buildFrontDoorConfig({ vercelEnvironment: "preview" }));
-  const production = serialized(buildFrontDoorConfig(PRODUCTION_OPTIONS));
-
-  assert.doesNotMatch(preview, /heatcheck\.multiplier\.co/);
-  assert.match(production, /heatcheck\.multiplier\.co/);
-  assert.match(production, /labs\/brand-heat-check/);
-  assert.match(production, /labs\/property-pulse/);
-  assert.match(production, /labs\/heat-check\/report\/\$1/);
-  assert.match(production, /cultural-heat-check-ai/);
-  assert.match(production, /https:\/\/www\.multiplier\.co\/\$1/);
-});
-
-test("Labs source links to canonical routes and loads host-gated Production analytics", async () => {
+test("Labs source uses the subdomain canonical and direct product links", async () => {
   const html = await readFile(new URL("../multiplier-labs-landing-page.html", import.meta.url), "utf8");
   const analytics = await readFile(new URL("../labs-analytics.js", import.meta.url), "utf8");
 
-  assert.match(html, /data-labs-path="\/labs\/brand-heat-check"/);
-  assert.match(html, /data-labs-path="\/labs\/property-pulse"/);
-  assert.match(html, /data-labs-path="\/labs" class="nav-logo"/);
-  assert.equal((html.match(/data-labs-path=/g) ?? []).length, 6);
-  assert.equal(
-    (html.match(/href="https:\/\/www\.multiplier\.co\/labs(?:\/(?:brand-heat-check|property-pulse))?" data-labs-path=/g) ?? []).length,
-    6,
-  );
-  assert.doesNotMatch(html, /href="\/labs(?:\/|")/);
-  assert.match(html, /FILE_PREVIEW_FRONT_DOOR_ORIGIN = "https:\/\/multiplier-labs-preview-git-codex-front-15db8f-multiplier-labs\.vercel\.app"/);
-  assert.match(html, /location\.protocol === 'http:' \|\| location\.protocol === 'https:'/);
+  assert.match(html, /rel="canonical" href="https:\/\/labs\.multiplier\.co\/"/);
+  assert.match(html, /property="og:url" content="https:\/\/labs\.multiplier\.co\/"/);
+  assert.match(html, /"url": "https:\/\/labs\.multiplier\.co\/"/);
+  assert.equal((html.match(/href="https:\/\/labs\.multiplier\.co\/"/g) ?? []).length, 3);
+  assert.equal((html.match(/href="https:\/\/heatcheck\.multiplier\.co\/"/g) ?? []).length, 2);
+  assert.equal((html.match(/href="https:\/\/propertypulse\.multiplier\.co\/"/g) ?? []).length, 2);
+  assert.doesNotMatch(html, /data-labs-path|FILE_PREVIEW_FRONT_DOOR_ORIGIN|setAbsoluteLabsLinks/);
+  assert.doesNotMatch(html, /www\.multiplier\.co\/labs|railway\.app|webflow\.io/i);
   assert.match(html, /href="mailto:hello@multiplier\.co">Contact<\/a>/);
   assert.match(html, /id="toolsMenuButton"[^>]+aria-haspopup="true"[^>]+aria-expanded="false"/);
   assert.match(html, /id="toolsMenu"[^>]+hidden/);
-  assert.match(html, /Culture Calendar Generator/);
-  assert.match(html, /Sports AI Image Creator/);
-  assert.match(html, /Brief Builder/);
-  assert.match(html, /Influencer Finder/);
   assert.equal((html.match(/aria-disabled="true"/g) ?? []).length, 4);
   assert.match(html, /src="\/labs-analytics\.js"/);
-  assert.doesNotMatch(html, /railway\.app/i);
-  assert.match(html, /rel="canonical" href="https:\/\/www\.multiplier\.co\/labs"/);
-  assert.match(analytics, /hostname\.toLowerCase\(\) !== "www\.multiplier\.co"/);
+  assert.match(analytics, /hostname\.toLowerCase\(\) !== "labs\.multiplier\.co"/);
   assert.match(analytics, /G-G59ZHX4YS9/);
+  assert.doesNotMatch(analytics, /www\.multiplier\.co/);
 });
 
-test("Labs landing page includes the approved copy, card behavior, ticker, and signup target", async () => {
+test("Labs landing page preserves approved copy, cards, ticker, and signup target", async () => {
   const html = await readFile(new URL("../multiplier-labs-landing-page.html", import.meta.url), "utf8");
   const approvedCopy = [
     "Tools to navigate cultural relevance",
@@ -303,56 +129,35 @@ test("Labs landing page includes the approved copy, card behavior, ticker, and s
   assert.deepEqual(partners.slice(expectedPartners.length), expectedPartners);
 
   const anchorTags = html.match(/<a\b[^>]*>/g) ?? [];
-  const attribute = (tag, name) => tag.match(new RegExp(`\\b${name}="([^"]*)"`))?.[1];
+  const attribute = (tag, name) => tag.match(new RegExp("\\b" + name + '="([^"]*)"'))?.[1];
   const hasClass = (tag, className) => (attribute(tag, "class") ?? "").split(/\s+/).includes(className);
   const expectedNewTabLinks = [
-    {
-      className: "nav-tool-link",
-      href: "https://www.multiplier.co/labs/brand-heat-check",
-      labsPath: "/labs/brand-heat-check",
-    },
-    {
-      className: "nav-tool-link",
-      href: "https://www.multiplier.co/labs/property-pulse",
-      labsPath: "/labs/property-pulse",
-    },
-    {
-      className: "tool-card",
-      href: "https://www.multiplier.co/labs/brand-heat-check",
-      labsPath: "/labs/brand-heat-check",
-    },
-    {
-      className: "tool-card",
-      href: "https://www.multiplier.co/labs/property-pulse",
-      labsPath: "/labs/property-pulse",
-    },
+    { className: "nav-tool-link", href: "https://heatcheck.multiplier.co/" },
+    { className: "nav-tool-link", href: "https://propertypulse.multiplier.co/" },
+    { className: "tool-card", href: "https://heatcheck.multiplier.co/" },
+    { className: "tool-card", href: "https://propertypulse.multiplier.co/" },
     { className: "nav-agency", href: "https://www.multiplier.co/" },
     { className: "agency-link", href: "https://www.multiplier.co/" },
   ];
   for (const expected of expectedNewTabLinks) {
     const matches = anchorTags.filter((tag) => (
-      hasClass(tag, expected.className)
-      && attribute(tag, "href") === expected.href
-      && (expected.labsPath === undefined || attribute(tag, "data-labs-path") === expected.labsPath)
+      hasClass(tag, expected.className) && attribute(tag, "href") === expected.href
     ));
-    assert.equal(matches.length, 1, `${expected.className}: ${expected.href}`);
+    assert.equal(matches.length, 1, expected.className + ": " + expected.href);
     assert.equal(attribute(matches[0], "target"), "_blank");
     assert.ok((attribute(matches[0], "rel") ?? "").split(/\s+/).includes("noopener"));
   }
 
   const blankAnchors = anchorTags.filter((tag) => attribute(tag, "target") === "_blank");
   assert.equal(blankAnchors.length, expectedNewTabLinks.length);
-
-  const liveCardAnchors = anchorTags.filter((tag) => hasClass(tag, "tool-card"));
-  assert.equal(liveCardAnchors.length, 2);
   assert.equal((html.match(/<span class="tool-cta">Use tool →<\/span>/g) ?? []).length, 2);
   assert.equal((html.match(/<div class="tool-card coming-soon">/g) ?? []).length, 4);
   assert.equal((html.match(/<a href="#newsletter" class="tool-cta waitlist">/g) ?? []).length, 4);
 
   const navLogo = anchorTags.find((tag) => hasClass(tag, "nav-logo")) ?? "";
   const footerLogo = anchorTags.find((tag) => hasClass(tag, "footer-logo")) ?? "";
-  assert.notEqual(navLogo, "");
-  assert.notEqual(footerLogo, "");
+  assert.equal(attribute(navLogo, "href"), "https://labs.multiplier.co/");
+  assert.equal(attribute(footerLogo, "href"), "https://labs.multiplier.co/");
   assert.notEqual(attribute(navLogo, "target"), "_blank");
   assert.notEqual(attribute(footerLogo, "target"), "_blank");
 
@@ -404,14 +209,17 @@ test("Labs signup builds the expected Google Form request without sending it", a
           remove() {},
         };
       }
-      throw new Error(`Unexpected element: ${tagName}`);
+      throw new Error("Unexpected element: " + tagName);
     },
     body: {
       appendChild() {},
     },
   };
 
-  runInNewContext(`${signupScript}\nsubmitToSheet("qa+labs@example.com");`, { document });
+  runInNewContext(
+    signupScript + '\nsubmitToSheet("qa+labs@example.com");',
+    { document },
+  );
 
   assert.deepEqual(capturedRequest, {
     action: "https://docs.google.com/forms/d/e/1FAIpQLSeX2LuIpNGN1a2YIuXnByoZSsNGHBy9bblyVa4qHKPQBrLj0Q/formResponse",
@@ -425,42 +233,52 @@ test("Labs signup builds the expected Google Form request without sending it", a
   });
 });
 
-test("Production discovery files expose public pages and exclude private report surfaces", async () => {
+test("Production discovery files are scoped to the Labs subdomain", async () => {
   const robots = await readFile(new URL("../robots-production.txt", import.meta.url), "utf8");
   const sitemap = await readFile(new URL("../sitemap-production.xml", import.meta.url), "utf8");
   const llms = await readFile(new URL("../llms-production.txt", import.meta.url), "utf8");
+  const previewRobots = await readFile(new URL("../robots-preview.txt", import.meta.url), "utf8");
+  const previewSitemap = await readFile(new URL("../sitemap-preview.xml", import.meta.url), "utf8");
 
   assert.match(robots, /Allow: \//);
-  assert.match(robots, /Disallow: \/labs\/heat-check\/api/);
-  assert.match(robots, /Disallow: \/labs\/heat-check\/report/);
-  assert.match(robots, /Sitemap: https:\/\/www\.multiplier\.co\/sitemap\.xml/);
-
-  for (const path of ["/labs", "/labs/brand-heat-check", "/labs/property-pulse"]) {
-    assert.match(sitemap, new RegExp(`https://www\\.multiplier\\.co${path.replaceAll("/", "\\/")}`));
-    assert.match(llms, new RegExp(`https://www\\.multiplier\\.co${path.replaceAll("/", "\\/")}`));
-  }
-  assert.doesNotMatch(sitemap, /\/labs\/heat-check\/report/);
-  assert.doesNotMatch(sitemap, /cultural-heat-check-ai/);
+  assert.doesNotMatch(robots, /Disallow:/);
+  assert.match(robots, /Sitemap: https:\/\/labs\.multiplier\.co\/sitemap\.xml/);
+  assert.equal((sitemap.match(/<loc>/g) ?? []).length, 1);
+  assert.match(sitemap, /<loc>https:\/\/labs\.multiplier\.co\/<\/loc>/);
+  assert.doesNotMatch(sitemap, /www\.multiplier\.co|heatcheck|propertypulse/);
+  assert.match(llms, /https:\/\/labs\.multiplier\.co\//);
+  assert.match(llms, /https:\/\/heatcheck\.multiplier\.co\//);
+  assert.match(llms, /https:\/\/propertypulse\.multiplier\.co\//);
+  assert.doesNotMatch(llms, /www\.multiplier\.co\/labs/);
+  assert.match(previewRobots, /Disallow: \//);
+  assert.equal((previewSitemap.match(/<loc>/g) ?? []).length, 0);
 });
 
-test("repository configuration contains no literal protection bypass secret", async () => {
-  const files = ["../vercel.ts", "../vercel-routing.js"];
-  const configSource = (
+test("repository no longer contains front-door proxy dependencies", async () => {
+  const files = [
+    "../vercel.ts",
+    "../vercel-labs.js",
+    "../package.json",
+    "../multiplier-labs-landing-page.html",
+  ];
+  const source = (
     await Promise.all(files.map((file) => readFile(new URL(file, import.meta.url), "utf8")))
   ).join("\n");
-  assert.doesNotMatch(configSource, /x-vercel-protection-bypass["']?\s*:\s*["'][^"'$]{10}/i);
-});
 
-test("Webflow production analytics loader remains disabled in Preview", async () => {
-  const preview = serialized(buildFrontDoorConfig({ vercelEnvironment: "preview" }));
-  const production = serialized(buildFrontDoorConfig(PRODUCTION_OPTIONS));
-  const disabledScript = await readFile(
-    new URL("../preview-analytics-disabled.js", import.meta.url),
-    "utf8",
+  assert.doesNotMatch(
+    source,
+    /WEBFLOW_PRODUCTION_ORIGIN|HEAT_CHECK_PRODUCTION_ORIGIN|HEAT_CHECK_BYPASS_SECRET/,
+  );
+  assert.doesNotMatch(
+    source,
+    /x-vercel-protection-bypass|multiplier-cb687a\.webflow\.io|multiplier-heat-check[^"]*\.vercel\.app|railway\.app/i,
   );
 
-  assert.match(preview, /nvhc9u4gxsagNjhmN2Q0YTJmNzdkOWVmODg0YmUxMWU0/);
-  assert.match(preview, /preview-analytics-disabled/);
-  assert.doesNotMatch(production, /preview-analytics-disabled/);
-  assert.doesNotMatch(disabledScript, /G-[A-Z0-9]+/);
+  for (const legacyFile of [
+    "../routing.js",
+    "../vercel-routing.js",
+    "../preview-analytics-disabled.js",
+  ]) {
+    await assert.rejects(access(new URL(legacyFile, import.meta.url)));
+  }
 });

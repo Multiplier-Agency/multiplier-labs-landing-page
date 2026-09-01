@@ -1,29 +1,20 @@
-# Multiplier Labs front door
+# Multiplier Labs landing page
 
-This repository contains the Multiplier Labs landing page and the launch front-door router.
+This repository contains the standalone Multiplier Labs site published at
+`https://labs.multiplier.co/`.
 
-## Rehearsal behavior
+## Site behavior
 
-- `/labs` serves the Labs landing page.
-- `/labs/brand-heat-check` and `/labs/property-pulse` route to the protected Heat Check Preview.
-- `/labs/heat-check/*` routes report, API, PDF, and asset requests to the protected Heat Check Preview.
-- All other paths route to the native Webflow staging origin.
-- Every Preview response is marked `noindex`.
-- The Webflow production analytics loader is replaced with an empty local script in Preview.
+- `/` serves the Labs landing page.
+- Brand Heat Check links directly to `https://heatcheck.multiplier.co/`.
+- Property Pulse links directly to `https://propertypulse.multiplier.co/`.
+- All other unknown paths return `404` and are marked `noindex`.
+- There are no Webflow proxies, product rewrites, Railway fallbacks, or cross-project protection-bypass requests.
 
-`HEAT_CHECK_BYPASS_SECRET` must be configured only in the Vercel Preview environment. Never place its value in this repository.
+Preview deployments are globally marked `noindex` and use the Preview versions of
+`robots.txt`, `sitemap.xml`, and `llms.txt`. Production serves the public discovery
+files for the Labs root only.
 
-## Production behavior
-
-Production builds fail closed unless both of these build-time values are present and valid:
-
-- `WEBFLOW_PRODUCTION_ORIGIN=https://wf.multiplier.co`
-- `HEAT_CHECK_PRODUCTION_ORIGIN=<stable, public Vercel Production origin>`
-
-Production omits the Preview protection bypass, Preview analytics suppression, and global `noindex`. It serves public `robots.txt`, `sitemap.xml`, and `llms.txt` files, keeps report/API/PDF routes out of discovery, redirects the bare domain to `www`, and preserves the launch redirects for the legacy Heat Check URLs.
-
-The Labs landing page loads GA4 only when its browser hostname is exactly `www.multiplier.co`. Preview activity is therefore not sent to the production property.
-
-Do not deploy Production until `wf.multiplier.co` serves the current Webflow site without redirecting back to `www.multiplier.co`, and the Heat Check origin is the exact Vercel Production deployment accepted for launch.
-
-The other builder's current landing-page work was not present in GitHub when this branch was created. Merge that work only after it is committed to a named branch and the source diff has been reviewed.
+The landing page loads GA4 only when its browser hostname is exactly
+`labs.multiplier.co`, so Vercel Preview activity is excluded from the production
+property.

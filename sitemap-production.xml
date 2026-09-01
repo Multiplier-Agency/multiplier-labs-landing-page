@@ -1,13 +1,4 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
-  <url><loc>https://www.multiplier.co/</loc></url>
-  <url><loc>https://www.multiplier.co/culture</loc></url>
-  <url><loc>https://www.multiplier.co/work-non-profit</loc></url>
-  <url><loc>https://www.multiplier.co/capabilities</loc></url>
-  <url><loc>https://www.multiplier.co/ventures</loc></url>
-  <url><loc>https://www.multiplier.co/work</loc></url>
-  <url><loc>https://www.multiplier.co/apply</loc></url>
-  <url><loc>https://www.multiplier.co/labs</loc></url>
-  <url><loc>https://www.multiplier.co/labs/brand-heat-check</loc></url>
-  <url><loc>https://www.multiplier.co/labs/property-pulse</loc></url>
+  <url><loc>https://labs.multiplier.co/</loc></url>
 </urlset>
