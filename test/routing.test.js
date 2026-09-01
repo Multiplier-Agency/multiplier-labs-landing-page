@@ -235,8 +235,14 @@ test("Labs source links to canonical routes and loads host-gated Production anal
   assert.match(html, /data-labs-path="\/labs\/property-pulse"/);
   assert.match(html, /data-labs-path="\/labs" class="nav-logo"/);
   assert.equal((html.match(/data-labs-path=/g) ?? []).length, 6);
+  assert.equal(
+    (html.match(/href="https:\/\/www\.multiplier\.co\/labs(?:\/(?:brand-heat-check|property-pulse))?" data-labs-path=/g) ?? []).length,
+    6,
+  );
   assert.doesNotMatch(html, /href="\/labs(?:\/|")/);
   assert.match(html, /FILE_PREVIEW_FRONT_DOOR_ORIGIN = "https:\/\/multiplier-labs-preview-git-codex-front-15db8f-multiplier-labs\.vercel\.app"/);
+  assert.match(html, /location\.protocol === 'http:' \|\| location\.protocol === 'https:'/);
+  assert.match(html, /href="mailto:hello@multiplier\.co">Contact<\/a>/);
   assert.match(html, /id="toolsMenuButton"[^>]+aria-haspopup="true"[^>]+aria-expanded="false"/);
   assert.match(html, /id="toolsMenu"[^>]+hidden/);
   assert.match(html, /Culture Calendar Generator/);
