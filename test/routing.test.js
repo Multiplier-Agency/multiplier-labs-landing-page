@@ -143,13 +143,16 @@ test("Labs source uses the subdomain canonical and direct product links", async 
   assert.equal((html.match(/href="https:\/\/propertypulse\.multiplier\.co\/"/g) ?? []).length, 2);
   assert.doesNotMatch(html, /data-labs-path|FILE_PREVIEW_FRONT_DOOR_ORIGIN|setAbsoluteLabsLinks/);
   assert.doesNotMatch(html, /www\.multiplier\.co\/labs|railway\.app|webflow\.io/i);
-  assert.match(html, /href="mailto:hello@multiplier\.co">Contact<\/a>/);
+  assert.match(html, /href="mailto:hello@multiplier\.co"[^>]*>Contact<\/a>/);
   assert.match(html, /id="toolsMenuButton"[^>]+aria-haspopup="true"[^>]+aria-expanded="false"/);
   assert.match(html, /id="toolsMenu"[^>]+hidden/);
   assert.equal((html.match(/aria-disabled="true"/g) ?? []).length, 4);
   assert.match(html, /src="\/labs-analytics\.js"/);
   assert.match(analytics, /hostname\.toLowerCase\(\) !== "labs\.multiplier\.co"/);
   assert.match(analytics, /G-G59ZHX4YS9/);
+  assert.match(analytics, /window\.multiplierLabsAnalytics = Object\.freeze\(\{ track \}\)/);
+  assert.match(analytics, /source\.closest\("\[data-analytics-event\]"\)/);
+  assert.doesNotMatch(analytics, /email["']?\s*:/i);
   assert.doesNotMatch(analytics, /www\.multiplier\.co/);
 });
 
@@ -221,7 +224,11 @@ test("Labs landing page preserves approved copy, cards, ticker, and signup targe
   assert.equal(blankAnchors.length, expectedNewTabLinks.length);
   assert.equal((html.match(/<span class="tool-cta">Use tool →<\/span>/g) ?? []).length, 2);
   assert.equal((html.match(/<div class="tool-card coming-soon">/g) ?? []).length, 4);
-  assert.equal((html.match(/<a href="#newsletter" class="tool-cta waitlist">/g) ?? []).length, 4);
+  const waitlistAnchors = anchorTags.filter((tag) => (
+    hasClass(tag, "waitlist") && attribute(tag, "href") === "#newsletter"
+  ));
+  assert.equal(waitlistAnchors.length, 4);
+  assert.ok(waitlistAnchors.every((tag) => attribute(tag, "data-analytics-button") === "join_waitlist"));
 
   const navLogo = anchorTags.find((tag) => hasClass(tag, "nav-logo")) ?? "";
   const footerLogo = anchorTags.find((tag) => hasClass(tag, "footer-logo")) ?? "";
@@ -244,6 +251,100 @@ test("Labs landing page preserves approved copy, cards, ticker, and signup targe
   assert.match(html, /const GFORM_EMAIL_FIELD = "entry\.778182506";/);
   assert.match(html, /form\.action = GFORM_ACTION;/);
   assert.match(html, /input\.name = GFORM_EMAIL_FIELD;/);
+  assert.match(html, /track\('newsletter_signup'/);
+  assert.match(html, /track\('newsletter_signup_error'/);
+  assert.match(html, /handleSubscribe\('button'\)/);
+  assert.match(html, /handleSubscribe\('enter'\)/);
+  assert.doesNotMatch(html, /newsletter_(?:signup|signup_error)'[\s\S]{0,250}email\s*:/);
+});
+
+test("Labs analytics emits stable low-cardinality events only on the production host", async () => {
+  const analytics = await readFile(new URL("../labs-analytics.js", import.meta.url), "utf8");
+  const listeners = {};
+  const scripts = [];
+  const window = {
+    location: { hostname: "labs.multiplier.co" },
+    dataLayer: [],
+  };
+  const document = {
+    addEventListener(type, listener) {
+      listeners[type] = listener;
+    },
+    createElement(tagName) {
+      assert.equal(tagName, "script");
+      return {};
+    },
+    head: {
+      appendChild(script) {
+        scripts.push({ ...script });
+      },
+    },
+  };
+
+  runInNewContext(analytics, { document, window, Date, Object, encodeURIComponent });
+  assert.equal(typeof window.multiplierLabsAnalytics?.track, "function");
+  assert.equal(typeof listeners.click, "function");
+  assert.equal(scripts.length, 1);
+  assert.match(scripts[0].src, /googletagmanager\.com\/gtag\/js\?id=G-G59ZHX4YS9/);
+
+  listeners.click({
+    target: {
+      closest() {
+        return {
+          dataset: {
+            analyticsEvent: "labs_tool_select",
+            analyticsButton: "tool_brand_heat_check",
+            analyticsProduct: "brand_heat_check",
+            analyticsSurface: "labs_tools_grid",
+            analyticsTool: "brand_heat_check",
+          },
+        };
+      },
+    },
+  });
+
+  window.multiplierLabsAnalytics.track("newsletter_signup", {
+    button_name: "newsletter_subscribe",
+    email: "must-not-be-collected@example.com",
+    method: "button",
+    result: "submitted",
+    surface: "labs_newsletter",
+  });
+
+  const calls = window.dataLayer.map((entry) => Array.from(entry));
+  const toolEvent = calls.find((entry) => entry[0] === "event" && entry[1] === "labs_tool_select");
+  const newsletterEvent = calls.find((entry) => entry[0] === "event" && entry[1] === "newsletter_signup");
+  assert.deepEqual(JSON.parse(JSON.stringify(toolEvent?.[2])), {
+    send_to: "G-G59ZHX4YS9",
+    button_name: "tool_brand_heat_check",
+    product: "brand_heat_check",
+    surface: "labs_tools_grid",
+    tool_name: "brand_heat_check",
+  });
+  assert.deepEqual(JSON.parse(JSON.stringify(newsletterEvent?.[2])), {
+    send_to: "G-G59ZHX4YS9",
+    button_name: "newsletter_subscribe",
+    method: "button",
+    result: "submitted",
+    surface: "labs_newsletter",
+  });
+});
+
+test("Labs analytics stays disabled on Vercel aliases", async () => {
+  const analytics = await readFile(new URL("../labs-analytics.js", import.meta.url), "utf8");
+  const window = { location: { hostname: "example.vercel.app" } };
+  const document = {
+    addEventListener() {
+      throw new Error("Preview analytics must not register listeners");
+    },
+    createElement() {
+      throw new Error("Preview analytics must not load gtag");
+    },
+  };
+
+  runInNewContext(analytics, { document, window });
+  assert.equal(window.gtag, undefined);
+  assert.equal(window.multiplierLabsAnalytics, undefined);
 });
 
 test("Labs signup builds the expected Google Form request without sending it", async () => {
