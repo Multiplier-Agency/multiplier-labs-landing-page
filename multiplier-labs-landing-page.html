@@ -659,6 +659,7 @@ footer { background: var(--pack-blue); border-top: 1px solid rgba(255,255,255,0.
 .footer-logo .fl-m { font-weight: 800; font-size: 13px; letter-spacing: 0.08em; color: var(--white); text-transform: uppercase; }
 .footer-logo .fl-l { font-weight: 800; font-size: 13px; letter-spacing: 0.08em; color: var(--ultra-coral); text-transform: uppercase; }
 .footer-links { display: flex; gap: 24px; list-style: none; }
+.footer-links[hidden] { display: none; }
 .footer-links a { font-size: 12px; color: rgba(255,255,255,0.3); text-decoration: none; transition: color 0.2s; }
 .footer-links a:hover { color: rgba(255,255,255,0.65); }
 .footer-copy { font-size: 11px; color: rgba(255,255,255,0.2); }
@@ -979,7 +980,7 @@ footer { background: var(--pack-blue); border-top: 1px solid rgba(255,255,255,0.
     <span class="fl-m">Multiplier</span>
     <span class="fl-l">Labs</span>
   </a>
-  <ul class="footer-links">
+  <ul class="footer-links" hidden>
     <li><a href="#">Privacy</a></li>
     <li><a href="#">Terms</a></li>
     <li><a href="mailto:hello@multiplier.co" data-analytics-event="contact_multiplier_click" data-analytics-button="contact" data-analytics-surface="labs_footer" data-analytics-destination="email">Contact</a></li>

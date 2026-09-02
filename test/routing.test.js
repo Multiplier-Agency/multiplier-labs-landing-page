@@ -144,6 +144,8 @@ test("Labs source uses the subdomain canonical and direct product links", async 
   assert.doesNotMatch(html, /data-labs-path|FILE_PREVIEW_FRONT_DOOR_ORIGIN|setAbsoluteLabsLinks/);
   assert.doesNotMatch(html, /www\.multiplier\.co\/labs|railway\.app|webflow\.io/i);
   assert.match(html, /href="mailto:hello@multiplier\.co"[^>]*>Contact<\/a>/);
+  assert.match(html, /<ul class="footer-links" hidden>/);
+  assert.match(html, /\.footer-links\[hidden\] \{ display: none; \}/);
   assert.match(html, /id="toolsMenuButton"[^>]+aria-haspopup="true"[^>]+aria-expanded="false"/);
   assert.match(html, /id="toolsMenu"[^>]+hidden/);
   assert.equal((html.match(/aria-disabled="true"/g) ?? []).length, 4);
