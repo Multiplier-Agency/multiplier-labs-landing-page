@@ -75,6 +75,7 @@ test("Production output exposes only the allowlisted Labs surface", async (conte
   await buildStaticSite({ environment: "production", outputDirectory });
   const publicFiles = (await readdir(outputDirectory)).sort();
   assert.deepEqual(publicFiles, [
+    "assets",
     "index.html",
     "labs-analytics.js",
     "llms.txt",
@@ -84,6 +85,15 @@ test("Production output exposes only the allowlisted Labs surface", async (conte
 
   const rootHtml = await readFile(join(outputDirectory, "index.html"), "utf8");
   assert.match(rootHtml, /rel="canonical" href="https:\/\/labs\.multiplier\.co\/"/);
+  assert.match(
+    rootHtml,
+    /property="og:image" content="https:\/\/labs\.multiplier\.co\/assets\/multiplier-labs-social-share\.png"/,
+  );
+  assert.match(rootHtml, /name="twitter:card" content="summary_large_image"/);
+  assert.deepEqual(
+    await readFile(join(outputDirectory, "assets", "multiplier-labs-social-share.png")),
+    await readFile(new URL("../assets/multiplier-labs-social-share.png", import.meta.url)),
+  );
   assert.match(
     await readFile(join(outputDirectory, "robots.txt"), "utf8"),
     /Sitemap: https:\/\/labs\.multiplier\.co\/sitemap\.xml/,
@@ -137,6 +147,17 @@ test("Labs source uses the subdomain canonical and direct product links", async 
 
   assert.match(html, /rel="canonical" href="https:\/\/labs\.multiplier\.co\/"/);
   assert.match(html, /property="og:url" content="https:\/\/labs\.multiplier\.co\/"/);
+  assert.match(
+    html,
+    /property="og:image" content="https:\/\/labs\.multiplier\.co\/assets\/multiplier-labs-social-share\.png"/,
+  );
+  assert.match(html, /property="og:image:width" content="1731"/);
+  assert.match(html, /property="og:image:height" content="909"/);
+  assert.match(html, /name="twitter:card" content="summary_large_image"/);
+  assert.match(
+    html,
+    /name="twitter:image" content="https:\/\/labs\.multiplier\.co\/assets\/multiplier-labs-social-share\.png"/,
+  );
   assert.match(html, /"url": "https:\/\/labs\.multiplier\.co\/"/);
   assert.equal((html.match(/href="https:\/\/labs\.multiplier\.co\/"/g) ?? []).length, 3);
   assert.equal((html.match(/href="https:\/\/heatcheck\.multiplier\.co\/"/g) ?? []).length, 2);
