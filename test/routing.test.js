@@ -186,7 +186,6 @@ test("Labs landing page preserves approved copy, cards, ticker, and signup targe
     "See how a brand is showing up across culture and what is driving its relevance. Understand the signals, strengths, and momentum shaping its cultural position.",
     "Evaluate the strength, momentum, and relevance of a sports, music, entertainment, or cultural property. Understand where it is resonating, how its position is evolving, and what that means for potential partners.",
     "Identify the cultural moments that matter throughout the year.",
-    "Better questions. Sharper briefs.",
     "Turn your challenge into a clear creative brief. Answer three strategic questions, explore directions, and choose one to build a brief your team can use.",
     "Find the creators who best fit your brand.",
     "Multiplier Labs is where we experiment, build, and share.",
@@ -248,7 +247,7 @@ test("Labs landing page preserves approved copy, cards, ticker, and signup targe
 
   const blankAnchors = anchorTags.filter((tag) => attribute(tag, "target") === "_blank");
   assert.equal(blankAnchors.length, expectedNewTabLinks.length);
-  assert.equal((html.match(/<span class="tool-cta">Use tool →<\/span>/g) ?? []).length, 2);
+  assert.equal((html.match(/<span class="tool-cta">Use tool →<\/span>/g) ?? []).length, 3);
   assert.equal((html.match(/<div class="tool-card coming-soon">/g) ?? []).length, 3);
   const waitlistAnchors = anchorTags.filter((tag) => (
     hasClass(tag, "waitlist") && attribute(tag, "href") === "#newsletter"
