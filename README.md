@@ -8,6 +8,7 @@ This repository contains the standalone Multiplier Labs site published at
 - `/` serves the Labs landing page.
 - Brand Heat Check links directly to `https://heatcheck.multiplier.co/`.
 - Property Pulse links directly to `https://propertypulse.multiplier.co/`.
+- BriefLab links directly to `https://brieflab.multiplier.co/`.
 - All other unknown paths return `404` and are marked `noindex`.
 - There are no Webflow proxies, product rewrites, Railway fallbacks, or cross-project protection-bypass requests.
 
