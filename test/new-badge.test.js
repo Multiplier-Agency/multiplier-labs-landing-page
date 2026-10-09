@@ -14,7 +14,7 @@ function loadBadge({ launchDate = "", previewNew, hostname = "example.vercel.app
   return { badge, isNewLaunch: context.isNewLaunch };
 }
 
-test("New badge requires a confirmed launch date or explicit Preview display", () => {
+test("Launch status requires a confirmed launch date or explicit Preview display", () => {
   assert.equal(loadBadge().badge.hidden, true);
   assert.equal(loadBadge({ previewNew: "true" }).badge.hidden, false);
   assert.equal(loadBadge({ previewNew: "true", hostname: "labs.multiplier.co" }).badge.hidden, true);
@@ -22,7 +22,7 @@ test("New badge requires a confirmed launch date or explicit Preview display", (
   assert.equal(loadBadge({ launchDate: "invalid", previewNew: "true" }).badge.hidden, true);
 });
 
-test("New badge opens on launch and expires after one calendar month", () => {
+test("Launch status opens on launch and expires after one calendar month", () => {
   const { isNewLaunch } = loadBadge();
   for (const [launch, now, expected] of [
     ["2026-10-09", "2026-10-08T23:59:59Z", false],

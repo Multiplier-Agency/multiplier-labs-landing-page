@@ -413,7 +413,8 @@ a.tool-card:focus-visible .tool-cta { gap: 16px; }
 .live-row .tool-card:nth-child(2) .tool-icon { color: var(--white); }
 
 .tool-badge { font-size: 9px; font-weight: 800; letter-spacing: 0.14em; text-transform: uppercase; padding: 4px 9px; }
-.badge-new { position: absolute; top: 28px; right: 28px; background: var(--ultra-coral); color: var(--pack-blue); font-size: 10px; padding: 6px 10px; }
+.badge-new { position: absolute; top: 24px; right: 28px; display: inline-flex; align-items: center; gap: 8px; background: transparent; color: rgba(255,255,255,0.92); font-size: 12px; font-weight: 800; letter-spacing: 0.16em; line-height: 1; padding: 0; white-space: nowrap; }
+.badge-new::before { content: ''; width: 11px; height: 11px; background: #75DFA8; border-radius: 50%; flex-shrink: 0; animation: pulse 2s ease-in-out infinite; }
 .badge-new[hidden] { display: none; }
 .badge-live { background: var(--ultra-coral); color: var(--white); }
 .live-row .tool-card:nth-child(2) .badge-live { background: var(--pack-blue); color: var(--white); }
@@ -767,6 +768,7 @@ footer { background: var(--pack-blue); border-top: 1px solid rgba(255,255,255,0.
 }
 
 @media (prefers-reduced-motion: reduce) {
+  .badge-new::before, .soon-flag::before { animation: none; }
   a.tool-card { transition: filter 0.16s ease; }
   a.tool-card:hover,
   a.tool-card:focus-visible { transform: none; }
@@ -903,7 +905,7 @@ footer { background: var(--pack-blue); border-top: 1px solid rgba(255,255,255,0.
       <!-- 03 BriefLab - LIVE -->
       <a href="https://brieflab.multiplier.co/" class="tool-card" target="_blank" rel="noopener" data-analytics-event="labs_tool_select" data-analytics-product="brieflab" data-analytics-tool="brieflab" data-analytics-button="tool_brieflab" data-analytics-surface="labs_tools_grid">
         <!-- Set the actual launch date (YYYY-MM-DD, UTC) only once it is confirmed. -->
-        <span class="tool-badge badge-new" data-launch-date="" hidden>New</span>
+        <span class="tool-badge badge-new" data-launch-date="" hidden>Just launched</span>
         <div class="tool-card-header">
           <svg class="tool-icon" viewBox="0 0 24 24" fill="none" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5.5 2.5h8.5l4.5 4.5v14.5h-13z"/><polyline points="14,2.5 14,7 18.5,7"/><line x1="8.5" y1="12" x2="15.5" y2="12"/><line x1="8.5" y1="15.5" x2="15.5" y2="15.5"/><line x1="8.5" y1="19" x2="13" y2="19"/></svg>
           <div>

@@ -130,7 +130,7 @@ test("Preview output uses private discovery files while keeping the root availab
   await buildStaticSite({ environment: "preview", outputDirectory });
   assert.match(
     await readFile(join(outputDirectory, "index.html"), "utf8"),
-    /class="tool-badge badge-new" data-preview-new="true" data-launch-date="" hidden>New<\/span>/,
+    /class="tool-badge badge-new" data-preview-new="true" data-launch-date="" hidden>Just launched<\/span>/,
   );
   assert.match(
     await readFile(join(outputDirectory, "index.html"), "utf8"),
