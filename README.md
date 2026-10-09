@@ -32,6 +32,11 @@ rows. Below that breakpoint they stack in their existing order. Fonts, icons,
 brand colors, product descriptions, links, and live/coming-soon treatments are
 preserved.
 
+Desktop titles reserve the tallest title height within each row, including when
+longer names wrap at narrower widths. BriefLab keeps its one-line name, while all
+three descriptions in its row begin at the same vertical position. Mobile retains
+the original natural title heights.
+
 BriefLab's small coral **New** badge is shown explicitly in Preview builds while
 its launch date is unknown. Production builds do not enable this preview override.
 The actual launch date remains unset: configure `data-launch-date="YYYY-MM-DD"`

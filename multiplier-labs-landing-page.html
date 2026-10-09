@@ -430,6 +430,10 @@ a.tool-card:focus-visible .tool-cta { gap: 16px; }
 
 .tool-name { font-weight: 900; font-size: clamp(22px, 2.6vw, 30px); letter-spacing: -0.03em; line-height: 0.95; text-transform: uppercase; color: var(--white); margin-bottom: 10px; }
 
+@media (min-width: 769px) {
+  .tool-name { min-height: 1.9em; }
+}
+
 .tool-keyword { font-size: 15px; font-weight: 700; letter-spacing: -0.01em; line-height: 1.35; text-transform: none; color: var(--ultra-coral); }
 .live-row .tool-card:nth-child(2) .tool-keyword { color: rgba(17,25,40,0.85); }
 
@@ -1004,6 +1008,25 @@ footer { background: var(--pack-blue); border-top: 1px solid rgba(255,255,255,0.
 </footer>
 
 <script>
+  // Reserve the tallest title in each desktop row so all descriptions start level.
+  function alignToolTitles() {
+    const rows = document.querySelectorAll('.tools-grid');
+    for (const row of rows) {
+      const titles = [...row.querySelectorAll('.tool-name')];
+      titles.forEach(title => { title.style.minHeight = ''; });
+      if (window.innerWidth <= 768) continue;
+      const height = Math.max(...titles.map(title => title.getBoundingClientRect().height));
+      titles.forEach(title => { title.style.minHeight = height + 'px'; });
+    }
+  }
+  alignToolTitles();
+  document.fonts.ready.then(alignToolTitles);
+  let titleAlignmentFrame;
+  window.addEventListener('resize', function() {
+    cancelAnimationFrame(titleAlignmentFrame);
+    titleAlignmentFrame = requestAnimationFrame(alignToolTitles);
+  });
+
   // One calendar month, clamped to the next month's last day, starting at UTC midnight.
   function isNewLaunch(launchDate, now = new Date()) {
     if (!/^\d{4}-\d{2}-\d{2}$/.test(launchDate)) return false;
