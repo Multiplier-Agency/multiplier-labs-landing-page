@@ -37,11 +37,10 @@ longer names wrap at narrower widths. BriefLab keeps its one-line name, while al
 three descriptions in its row begin at the same vertical position. Mobile retains
 the original natural title heights.
 
-BriefLab's **Just launched** status uses the same uppercase status treatment as
-Coming soon, with white text and a subtly pulsing green dot on the navy card.
-Both status dots stop animating when reduced motion is requested. The launch
-status is shown explicitly in Preview builds while its launch date is unknown.
-Production builds do not enable this preview override.
+BriefLab's compact **Just Launched** badge uses the existing coral fill and navy
+text, with clear padding, slightly rounded corners, and the existing Geist font.
+It has no dot or animation. The badge is shown explicitly in Preview builds while
+its launch date is unknown. Production builds do not enable this preview override.
 The actual launch date remains unset: configure `data-launch-date="YYYY-MM-DD"`
 on the badge in `multiplier-labs-landing-page.html` after launch is confirmed.
 The badge appears from UTC midnight on that date until UTC midnight one calendar
