@@ -335,9 +335,9 @@ nav {
 .stat-label { font-size: 13px; font-weight: 400; color: var(--slate-charcoal); opacity: 0.6; line-height: 1.45; }
 
 /* ── TOOL GRID ── */
+.tools-catalog { display: grid; grid-template-rows: repeat(2, 1fr); gap: 3px; }
 .tools-grid { display: grid; gap: 3px; background: transparent; }
-.tools-grid.live-row { grid-template-columns: repeat(2, 1fr); }
-.tools-grid.soon-row { grid-template-columns: repeat(3, 1fr); margin-top: 3px; }
+.tools-grid.live-row, .tools-grid.soon-row { grid-template-columns: repeat(3, minmax(0, 1fr)); }
 
 .tool-card { display: flex; flex-direction: column; position: relative; overflow: hidden; color: inherit; text-decoration: none; transition: filter 0.16s ease, transform 0.16s ease; }
 a.tool-card:hover,
@@ -413,6 +413,8 @@ a.tool-card:focus-visible .tool-cta { gap: 16px; }
 .live-row .tool-card:nth-child(2) .tool-icon { color: var(--white); }
 
 .tool-badge { font-size: 9px; font-weight: 800; letter-spacing: 0.14em; text-transform: uppercase; padding: 4px 9px; }
+.badge-new { position: absolute; top: 28px; right: 28px; background: var(--ultra-coral); color: var(--pack-blue); font-size: 10px; padding: 6px 10px; }
+.badge-new[hidden] { display: none; }
 .badge-live { background: var(--ultra-coral); color: var(--white); }
 .live-row .tool-card:nth-child(2) .badge-live { background: var(--pack-blue); color: var(--white); }
 .badge-soon {
@@ -678,10 +680,6 @@ footer { background: var(--pack-blue); border-top: 1px solid rgba(255,255,255,0.
 .footer-copy { font-size: 11px; color: rgba(255,255,255,0.2); }
 
 /* ── RESPONSIVE ── */
-@media (max-width: 1024px) and (min-width: 769px) {
-  .tools-grid.soon-row { grid-template-columns: repeat(3, 1fr); }
-}
-
 @media (max-width: 768px) {
   nav { padding: 0 20px; position: relative; }
   .nav-toggle { display: flex; align-items: center; }
@@ -738,7 +736,10 @@ footer { background: var(--pack-blue); border-top: 1px solid rgba(255,255,255,0.
 
   .tools-section { padding: 56px 20px 64px; }
   .tools-header { grid-template-columns: 1fr; gap: 40px; }
+  .tools-catalog { display: block; }
   .tools-grid.live-row, .tools-grid.soon-row { grid-template-columns: 1fr; }
+  .tools-grid.soon-row { margin-top: 3px; }
+  .badge-new { top: 24px; right: 22px; }
   .tool-card-header { padding: 24px 22px 18px; }
   .tool-card-body { padding: 0 22px 26px; }
   .tool-icon { width: 48px; height: 48px; margin: 6px 0 14px; }
@@ -864,7 +865,7 @@ footer { background: var(--pack-blue); border-top: 1px solid rgba(255,255,255,0.
 
 <!-- TOOLS -->
 <section class="tools-section" id="tools">
-  <div class="section-inner">
+  <div class="section-inner tools-catalog">
     <div class="tools-grid live-row">
 
       <!-- 01 Brand Heat Check - LIVE -->
@@ -897,6 +898,8 @@ footer { background: var(--pack-blue); border-top: 1px solid rgba(255,255,255,0.
 
       <!-- 03 BriefLab - LIVE -->
       <a href="https://brieflab.multiplier.co/" class="tool-card" target="_blank" rel="noopener" data-analytics-event="labs_tool_select" data-analytics-product="brieflab" data-analytics-tool="brieflab" data-analytics-button="tool_brieflab" data-analytics-surface="labs_tools_grid">
+        <!-- Set the actual launch date (YYYY-MM-DD, UTC) only once it is confirmed. -->
+        <span class="tool-badge badge-new" data-launch-date="" hidden>New</span>
         <div class="tool-card-header">
           <svg class="tool-icon" viewBox="0 0 24 24" fill="none" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5.5 2.5h8.5l4.5 4.5v14.5h-13z"/><polyline points="14,2.5 14,7 18.5,7"/><line x1="8.5" y1="12" x2="15.5" y2="12"/><line x1="8.5" y1="15.5" x2="15.5" y2="15.5"/><line x1="8.5" y1="19" x2="13" y2="19"/></svg>
           <div>
@@ -913,7 +916,7 @@ footer { background: var(--pack-blue); border-top: 1px solid rgba(255,255,255,0.
 
     <div class="tools-grid soon-row">
 
-      <!-- 03 Culture Calendar Generator - COMING SOON -->
+      <!-- 04 Culture Calendar Generator - COMING SOON -->
       <div class="tool-card coming-soon">
         <div class="tool-card-header">
           <div class="soon-flag">Coming soon</div>
@@ -928,7 +931,7 @@ footer { background: var(--pack-blue); border-top: 1px solid rgba(255,255,255,0.
         </div>
       </div>
 
-      <!-- 04 Sports AI Image Creator - COMING SOON -->
+      <!-- 05 Sports AI Image Creator - COMING SOON -->
       <div class="tool-card coming-soon">
         <div class="tool-card-header">
           <div class="soon-flag">Coming soon</div>
@@ -1001,6 +1004,26 @@ footer { background: var(--pack-blue); border-top: 1px solid rgba(255,255,255,0.
 </footer>
 
 <script>
+  // One calendar month, clamped to the next month's last day, starting at UTC midnight.
+  function isNewLaunch(launchDate, now = new Date()) {
+    if (!/^\d{4}-\d{2}-\d{2}$/.test(launchDate)) return false;
+    const start = new Date(launchDate + 'T00:00:00Z');
+    if (!Number.isFinite(start.getTime()) || start.toISOString().slice(0, 10) !== launchDate) return false;
+    const year = start.getUTCFullYear();
+    const month = start.getUTCMonth();
+    const lastDay = new Date(Date.UTC(year, month + 2, 0)).getUTCDate();
+    const end = new Date(Date.UTC(year, month + 1, Math.min(start.getUTCDate(), lastDay)));
+    return now >= start && now < end;
+  }
+
+  const newBadge = document.querySelector('.badge-new');
+  if (newBadge) {
+    const launchDate = newBadge.dataset.launchDate;
+    // The static build opts Preview into this visual only while the launch date is unset.
+    const previewNew = newBadge.dataset.previewNew === 'true' && window.location.hostname !== 'labs.multiplier.co';
+    newBadge.hidden = launchDate ? !isNewLaunch(launchDate) : !previewNew;
+  }
+
   // Submits silently to the "Multiplier Labs — Email Signups Form" Google Form,
   // which is linked to the "Multiplier Labs — Email Signups" Google Sheet.
   // Uses a hidden iframe so the visitor never leaves this page or sees Google Forms.

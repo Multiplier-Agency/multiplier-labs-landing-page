@@ -24,3 +24,19 @@ files for the Labs root only.
 The landing page loads GA4 only when its browser hostname is exactly
 `labs.multiplier.co`, so Vercel Preview activity is excluded from the production
 property.
+
+## Homepage review layout and BriefLab badge
+
+Above 768px, the six existing cards use three equal columns and two equally tall
+rows. Below that breakpoint they stack in their existing order. Fonts, icons,
+brand colors, product descriptions, links, and live/coming-soon treatments are
+preserved.
+
+BriefLab's small coral **New** badge is shown explicitly in Preview builds while
+its launch date is unknown. Production builds do not enable this preview override.
+The actual launch date remains unset: configure `data-launch-date="YYYY-MM-DD"`
+on the badge in `multiplier-labs-landing-page.html` after launch is confirmed.
+The badge appears from UTC midnight on that date until UTC midnight one calendar
+month later (clamped to the next month's last day for dates such as January 31).
+A configured date takes precedence in every build, so the badge expires
+automatically. Badge visibility never changes card dimensions or action positions.

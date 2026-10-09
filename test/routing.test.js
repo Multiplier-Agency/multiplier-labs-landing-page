@@ -84,6 +84,7 @@ test("Production output exposes only the allowlisted Labs surface", async (conte
   ]);
 
   const rootHtml = await readFile(join(outputDirectory, "index.html"), "utf8");
+  assert.doesNotMatch(rootHtml, /data-preview-new=/);
   assert.match(rootHtml, /rel="canonical" href="https:\/\/labs\.multiplier\.co\/"/);
   assert.match(
     rootHtml,
@@ -127,6 +128,10 @@ test("Preview output uses private discovery files while keeping the root availab
   context.after(() => rm(outputDirectory, { recursive: true, force: true }));
 
   await buildStaticSite({ environment: "preview", outputDirectory });
+  assert.match(
+    await readFile(join(outputDirectory, "index.html"), "utf8"),
+    /class="tool-badge badge-new" data-preview-new="true" data-launch-date="" hidden>New<\/span>/,
+  );
   assert.match(
     await readFile(join(outputDirectory, "index.html"), "utf8"),
     /<title>Multiplier Labs<\/title>/,
