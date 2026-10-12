@@ -167,6 +167,13 @@ test("Labs source uses the subdomain canonical and direct product links", async 
   assert.equal((html.match(/href="https:\/\/labs\.multiplier\.co\/"/g) ?? []).length, 3);
   assert.equal((html.match(/href="https:\/\/heatcheck\.multiplier\.co\/"/g) ?? []).length, 2);
   assert.equal((html.match(/href="https:\/\/propertypulse\.multiplier\.co\/"/g) ?? []).length, 2);
+  assert.equal((html.match(/href="https:\/\/briefbuilder\.multiplier\.co\/"/g) ?? []).length, 2);
+  assert.match(html, /<span>Brief Builder<\/span>/);
+  assert.match(html, /<div class="tool-name">Brief Builder<\/div>/);
+  assert.doesNotMatch(html.replace(/\sdata-analytics-[\w-]+="[^"]*"/g, ""), /\bBrief[\s_-]?Labs?\b/i);
+  assert.equal((html.match(/data-analytics-product="brieflab"/g) ?? []).length, 2);
+  assert.equal((html.match(/data-analytics-tool="brieflab"/g) ?? []).length, 2);
+  assert.equal((html.match(/data-analytics-button="tool_brieflab"/g) ?? []).length, 2);
   assert.doesNotMatch(html, /data-labs-path|FILE_PREVIEW_FRONT_DOOR_ORIGIN|setAbsoluteLabsLinks/);
   assert.doesNotMatch(html, /www\.multiplier\.co\/labs|railway\.app|webflow\.io/i);
   assert.match(html, /href="mailto:hello@multiplier\.co"[^>]*>Contact<\/a>/);
@@ -234,10 +241,10 @@ test("Labs landing page preserves approved copy, cards, ticker, and signup targe
   const expectedNewTabLinks = [
     { className: "nav-tool-link", href: "https://heatcheck.multiplier.co/" },
     { className: "nav-tool-link", href: "https://propertypulse.multiplier.co/" },
-    { className: "nav-tool-link", href: "https://brieflab.multiplier.co/" },
+    { className: "nav-tool-link", href: "https://briefbuilder.multiplier.co/" },
     { className: "tool-card", href: "https://heatcheck.multiplier.co/" },
     { className: "tool-card", href: "https://propertypulse.multiplier.co/" },
-    { className: "tool-card", href: "https://brieflab.multiplier.co/" },
+    { className: "tool-card", href: "https://briefbuilder.multiplier.co/" },
     { className: "nav-agency", href: "https://www.multiplier.co/" },
     { className: "agency-link", href: "https://www.multiplier.co/" },
   ];
@@ -449,6 +456,8 @@ test("Production discovery files are scoped to the Labs subdomain", async () => 
   assert.match(llms, /https:\/\/labs\.multiplier\.co\//);
   assert.match(llms, /https:\/\/heatcheck\.multiplier\.co\//);
   assert.match(llms, /https:\/\/propertypulse\.multiplier\.co\//);
+  assert.match(llms, /Brief Builder: https:\/\/briefbuilder\.multiplier\.co\//);
+  assert.doesNotMatch(llms, /\bBrief[\s_-]?Labs?\b/i);
   assert.doesNotMatch(llms, /www\.multiplier\.co\/labs/);
   assert.match(previewRobots, /Disallow: \//);
   assert.equal((previewSitemap.match(/<loc>/g) ?? []).length, 0);
