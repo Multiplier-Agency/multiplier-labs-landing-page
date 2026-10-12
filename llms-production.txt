@@ -12,7 +12,7 @@ Multiplier Labs builds practical AI tools for brand, culture, sponsorship, and m
   A source-based assessment of a brand's current cultural relevance, participation, and momentum.
 - Property Pulse: https://propertypulse.multiplier.co/
   A source-based assessment of a sports or entertainment property's cultural momentum and sponsorship potential.
-- BriefLab: https://brieflab.multiplier.co/
+- Brief Builder: https://briefbuilder.multiplier.co/
   A strategic brief builder that turns three questions and a selected direction into a creative brief.
 
 ## Multiplier
