@@ -84,6 +84,7 @@ test("Production output exposes only the allowlisted Labs surface", async (conte
   ]);
 
   const rootHtml = await readFile(join(outputDirectory, "index.html"), "utf8");
+  assert.doesNotMatch(rootHtml, /data-preview-new=/);
   assert.match(rootHtml, /rel="canonical" href="https:\/\/labs\.multiplier\.co\/"/);
   assert.match(
     rootHtml,
@@ -129,6 +130,10 @@ test("Preview output uses private discovery files while keeping the root availab
   await buildStaticSite({ environment: "preview", outputDirectory });
   assert.match(
     await readFile(join(outputDirectory, "index.html"), "utf8"),
+    /class="tool-badge badge-new" data-preview-new="true" data-launch-date="2026-10-12" hidden>Just Launched<\/span>/,
+  );
+  assert.match(
+    await readFile(join(outputDirectory, "index.html"), "utf8"),
     /<title>Multiplier Labs<\/title>/,
   );
   assert.match(
@@ -169,7 +174,7 @@ test("Labs source uses the subdomain canonical and direct product links", async 
   assert.match(html, /\.footer-links\[hidden\] \{ display: none; \}/);
   assert.match(html, /id="toolsMenuButton"[^>]+aria-haspopup="true"[^>]+aria-expanded="false"/);
   assert.match(html, /id="toolsMenu"[^>]+hidden/);
-  assert.equal((html.match(/aria-disabled="true"/g) ?? []).length, 4);
+  assert.equal((html.match(/aria-disabled="true"/g) ?? []).length, 3);
   assert.match(html, /src="\/labs-analytics\.js"/);
   assert.match(analytics, /hostname\.toLowerCase\(\) !== "labs\.multiplier\.co"/);
   assert.match(analytics, /G-G59ZHX4YS9/);
@@ -186,7 +191,7 @@ test("Labs landing page preserves approved copy, cards, ticker, and signup targe
     "See how a brand is showing up across culture and what is driving its relevance. Understand the signals, strengths, and momentum shaping its cultural position.",
     "Evaluate the strength, momentum, and relevance of a sports, music, entertainment, or cultural property. Understand where it is resonating, how its position is evolving, and what that means for potential partners.",
     "Identify the cultural moments that matter throughout the year.",
-    "Turn any assignment into a structured team brief.",
+    "Turn your challenge into a clear creative brief. Answer three strategic questions, explore directions, and choose one to build a brief your team can use.",
     "Find the creators who best fit your brand.",
     "Multiplier Labs is where we experiment, build, and share.",
   ];
@@ -229,8 +234,10 @@ test("Labs landing page preserves approved copy, cards, ticker, and signup targe
   const expectedNewTabLinks = [
     { className: "nav-tool-link", href: "https://heatcheck.multiplier.co/" },
     { className: "nav-tool-link", href: "https://propertypulse.multiplier.co/" },
+    { className: "nav-tool-link", href: "https://brieflab.multiplier.co/" },
     { className: "tool-card", href: "https://heatcheck.multiplier.co/" },
     { className: "tool-card", href: "https://propertypulse.multiplier.co/" },
+    { className: "tool-card", href: "https://brieflab.multiplier.co/" },
     { className: "nav-agency", href: "https://www.multiplier.co/" },
     { className: "agency-link", href: "https://www.multiplier.co/" },
   ];
@@ -245,12 +252,12 @@ test("Labs landing page preserves approved copy, cards, ticker, and signup targe
 
   const blankAnchors = anchorTags.filter((tag) => attribute(tag, "target") === "_blank");
   assert.equal(blankAnchors.length, expectedNewTabLinks.length);
-  assert.equal((html.match(/<span class="tool-cta">Use tool →<\/span>/g) ?? []).length, 2);
-  assert.equal((html.match(/<div class="tool-card coming-soon">/g) ?? []).length, 4);
+  assert.equal((html.match(/<span class="tool-cta">Use tool →<\/span>/g) ?? []).length, 3);
+  assert.equal((html.match(/<div class="tool-card coming-soon">/g) ?? []).length, 3);
   const waitlistAnchors = anchorTags.filter((tag) => (
     hasClass(tag, "waitlist") && attribute(tag, "href") === "#newsletter"
   ));
-  assert.equal(waitlistAnchors.length, 4);
+  assert.equal(waitlistAnchors.length, 3);
   assert.ok(waitlistAnchors.every((tag) => attribute(tag, "data-analytics-button") === "join_waitlist"));
 
   const navLogo = anchorTags.find((tag) => hasClass(tag, "nav-logo")) ?? "";

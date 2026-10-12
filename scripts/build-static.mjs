@@ -1,4 +1,4 @@
-import { cp, mkdir, rm, stat } from "node:fs/promises";
+import { cp, mkdir, readFile, rm, stat, writeFile } from "node:fs/promises";
 import { dirname, join, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
 
@@ -38,6 +38,12 @@ export async function buildStaticSite({
 
   for (const [source, destination] of PUBLIC_FILES) {
     await cp(join(projectRoot, source), join(resolvedOutput, destination));
+  }
+
+  if (preview) {
+    const htmlPath = join(resolvedOutput, "index.html");
+    const html = await readFile(htmlPath, "utf8");
+    await writeFile(htmlPath, html.replace('class="tool-badge badge-new"', 'class="tool-badge badge-new" data-preview-new="true"'));
   }
 
   for (const filename of ["robots.txt", "sitemap.xml", "llms.txt"]) {
