@@ -41,8 +41,9 @@ BriefLab's compact **Just Launched** badge uses the existing coral fill and navy
 text, with clear padding, slightly rounded corners, and the existing Geist font.
 It has no dot or animation. The badge is shown explicitly in Preview builds while
 its launch date is unknown. Production builds do not enable this preview override.
-The actual launch date remains unset: configure `data-launch-date="YYYY-MM-DD"`
-on the badge in `multiplier-labs-landing-page.html` after launch is confirmed.
+The confirmed launch date is `2026-10-12`, configured through `data-launch-date`
+on the badge in `multiplier-labs-landing-page.html`. The badge expires at UTC
+midnight on `2026-11-12`.
 The badge appears from UTC midnight on that date until UTC midnight one calendar
 month later (clamped to the next month's last day for dates such as January 31).
 A configured date takes precedence in every build, so the badge expires

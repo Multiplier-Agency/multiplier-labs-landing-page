@@ -25,6 +25,10 @@ test("Launch status requires a confirmed launch date or explicit Preview display
 test("Launch status opens on launch and expires after one calendar month", () => {
   const { isNewLaunch } = loadBadge();
   for (const [launch, now, expected] of [
+    ["2026-10-12", "2026-10-11T23:59:59Z", false],
+    ["2026-10-12", "2026-10-12T00:00:00Z", true],
+    ["2026-10-12", "2026-11-11T23:59:59Z", true],
+    ["2026-10-12", "2026-11-12T00:00:00Z", false],
     ["2026-10-09", "2026-10-08T23:59:59Z", false],
     ["2026-10-09", "2026-10-09T00:00:00Z", true],
     ["2026-10-09", "2026-11-08T23:59:59Z", true],
